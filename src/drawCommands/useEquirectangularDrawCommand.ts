@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import type { DrawConfig, Regl } from 'regl';
+import type { Regl, DrawCommand } from 'regl';
 
 import { useSphereMesh } from '../meshes/useSphereMesh';
-import { noOpDrawConfig } from '../utils/noOpDrawConfig';
 import { getProjectionMatrix, getViewMatrix } from '../utils/matrix';
 import type { CameraState } from '../types/CameraState';
 import type { Shader } from '../types/Shader';
+import { noOpDrawCommand } from '../utils/noOpDrawCommand';
 
 const latLongShader: Shader = {
   vert: `
@@ -42,38 +42,36 @@ export interface EquirectangularDrawConfigOptions {
 }
 
 /**
- * Hook that creates a Regl DrawConfig for rendering an equirectangular panorama on a sphere.
+ * Hook that creates a Regl DrawCommand for rendering an equirectangular panorama on a sphere.
  *
  * @param options DrawConfig options
- * @returns A Regl DrawConfig to render the panorama
+ * @returns A Regl DrawCommand to render the panorama
  */
-export function useEquirectangularDrawConfig({
+export function useEquirectangularDrawCommand({
   regl,
   canvasRef,
   cameraRef,
   image,
   latBands = 40,
   longBands = 60,
-}: EquirectangularDrawConfigOptions): DrawConfig {
+}: EquirectangularDrawConfigOptions): DrawCommand {
   // build sphere mesh (always call hook)
   const mesh = useSphereMesh(latBands, longBands);
 
-  return useMemo<DrawConfig>(() => {
+  return useMemo<DrawCommand>(() => {
     // skip if no image or no canvas
-    if (!image || !canvasRef.current || !regl) {
-      return noOpDrawConfig;
+    if (!regl || !canvasRef.current || !image) {
+      // return a no‐op command
+      return noOpDrawCommand;
     }
 
     const { width, height } = canvasRef.current;
     const panoTex = regl.texture({ data: image as any });
 
-    return {
+    return regl({
       vert: latLongShader.vert,
       frag: latLongShader.frag,
-      attributes: {
-        aPosition: mesh.positions,
-        aUV: mesh.uvs,
-      },
+      attributes: { aPosition: mesh.positions, aUV: mesh.uvs },
       elements: mesh.indices,
       uniforms: {
         texture: panoTex,
@@ -84,7 +82,7 @@ export function useEquirectangularDrawConfig({
       },
       depth: { enable: true },
       primitive: mesh.indices ? 'triangles' : 'triangle strip',
-    };
+    });
     // update if mesh, image, canvas size, or band counts change
-  }, [mesh, image, canvasRef.current, latBands, longBands]);
+  }, [regl, canvasRef.current, image, mesh, cameraRef, latBands, longBands]);
 }

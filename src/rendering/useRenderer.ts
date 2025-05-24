@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { DrawCommand, DrawConfig, Regl } from 'regl';
+import type { DrawCommand, Regl } from 'regl';
 import type { FrameContext } from '../types/FrameContext';
 
 // define clear options for regl.clear
@@ -11,7 +11,8 @@ export type ClearOptions = {
 // parameters object for useRenderer
 export interface UseRendererParams {
   regl: Regl | null;
-  drawConfigs: DrawConfig[];
+  /** already-built draw commands */
+  commands: DrawCommand[];
   onFrame?: (ctx: FrameContext) => void;
   /** Optional clear parameters (color/depth). */
   clearOptions?: ClearOptions;
@@ -24,29 +25,29 @@ export interface UseRendererParams {
  */
 export function useRenderer({
   regl,
-  drawConfigs,
+  commands,
   onFrame = () => {},
   clearOptions = { color: [0, 0, 0, 0], depth: 1 },
 }: UseRendererParams): void {
-  // build commands (empty if regl is null)
-  const drawCommands = useMemo<DrawCommand[]>(() => {
-    return regl ? drawConfigs.map((cfg) => regl(cfg)) : [];
-  }, [regl, JSON.stringify(drawConfigs)]);
+  // optionally disable loop if no regl
+  const cmds = useMemo<DrawCommand[]>(() => {
+    return regl ? commands : [];
+  }, [regl, commands]);
 
   const lastTimeRef = useRef(0);
-  const cmdsRef = useRef<DrawCommand[]>(drawCommands);
+  const cmdsRef = useRef<DrawCommand[]>(cmds);
   const frameCbRef = useRef(onFrame);
 
   useEffect(() => {
-    cmdsRef.current = drawCommands;
-  }, [drawCommands]);
+    cmdsRef.current = cmds;
+  }, [/* was drawCommands */ cmds]);
   useEffect(() => {
     frameCbRef.current = onFrame;
   }, [onFrame]);
 
   // frame loop → cancel on unmount or when regl changes
   useEffect(() => {
-    if (!regl) return; 
+    if (!regl) return;
     lastTimeRef.current = 0;
     const frame = regl.frame(({ time, tick }) => {
       const dt = lastTimeRef.current > 0 ? time - lastTimeRef.current : 0;
@@ -59,5 +60,5 @@ export function useRenderer({
     return () => {
       frame.cancel();
     };
-  }, [regl, JSON.stringify(clearOptions)]);
+  }, [regl, clearOptions]);
 }

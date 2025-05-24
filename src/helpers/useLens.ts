@@ -11,12 +11,14 @@ export interface UseLensOptions {
 export function useLens({
   initialCameraState = { yaw: 0, pitch: 0, fov: Math.PI / 2 },
   reglOptions,
-}: UseLensOptions) {
+}: UseLensOptions = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const regl = useREGL({
     canvas: canvasRef.current ?? undefined,
     ...reglOptions,
   });
+
   const cameraRef = useRef<CameraState>(initialCameraState);
 
   // resize canvas backing buffer to match CSS size × devicePixelRatio
