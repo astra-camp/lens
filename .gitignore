@@ -50,3 +50,5 @@ release-please-manifest.json
 
 # Miscellaneous
 *.log
+
+*storybook.log

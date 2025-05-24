@@ -5,8 +5,7 @@ import { useEquirectangularDrawConfig } from '../src/drawConfigs/useEquirectangu
 import { usePointerPan } from '../src/interaction/usePointerPan';
 import { useClickHitTest } from '../src/interaction/useClickHitTest';
 import { useRenderer } from '../src/rendering/useRenderer';
-import type { CameraState } from '../src/types/CameraState';
-import { useREGL } from '../src/rendering/useREGL';
+import { useLens } from '../src/helpers/useLens';
 
 // Props for DemoScene story controlled via Storybook Args
 interface DemoSceneProps {
@@ -14,7 +13,7 @@ interface DemoSceneProps {
   latBands: number;
   longBands: number;
   width: number | string;
-  height: number;
+  height: number | string;
   pixelRatio: number;
 }
 
@@ -26,11 +25,10 @@ const DemoSceneStory: React.FC<DemoSceneProps> = ({
   height,
   pixelRatio,
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const regl = useREGL({
-    canvas: canvasRef.current ?? undefined,
-    attributes: { preserveDrawingBuffer: true },
-    pixelRatio,
+  const { regl, cameraRef, canvasRef } = useLens({
+    reglOptions: {
+      pixelRatio,
+    },
   });
 
   // load panorama image from provided URL
@@ -46,9 +44,6 @@ const DemoSceneStory: React.FC<DemoSceneProps> = ({
     const blob = await res.blob();
     return createImageBitmap(blob);
   }, [imageUrl]);
-
-  // camera state stored in ref to avoid re-renders
-  const cameraRef = useRef<CameraState>({ yaw: 0, pitch: 0, fov: Math.PI / 2 });
 
   // draw config with custom subdivisions
   const drawConfig = useEquirectangularDrawConfig({
@@ -111,7 +106,7 @@ export const Default: Story = {
     latBands: 40,
     longBands: 60,
     width: '100%',
-    height: 400,
+    height: '100%',
     pixelRatio: window.devicePixelRatio,
   },
 };
