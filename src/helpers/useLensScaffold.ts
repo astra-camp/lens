@@ -3,15 +3,15 @@ import { InitializationOptions } from 'regl';
 import { useREGL } from '../rendering/useREGL';
 import { CameraState } from '../types/CameraState';
 
-export interface UseLensOptions {
+export interface LensScaffoldOptions {
   initialCameraState?: CameraState;
   reglOptions?: InitializationOptions;
 }
 
-export function useLens({
+export function useLensScaffold({
   initialCameraState = { yaw: 0, pitch: 0, fov: Math.PI / 2 },
   reglOptions,
-}: UseLensOptions = {}) {
+}: LensScaffoldOptions = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const regl = useREGL({

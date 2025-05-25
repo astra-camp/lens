@@ -13,15 +13,22 @@ export function usePointerPan<T extends HTMLElement>(
   useEffect(() => {
     const el = elementRef.current;
     if (!el) return;
+    const element = el;
+
+    // disable native touch gestures and text selection
+    element.style.touchAction = 'none';
+    element.style.userSelect = 'none';
 
     let lastPoint: { x: number; y: number } | null = null;
 
     function onPointerDown(e: PointerEvent) {
-      el!.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      element.setPointerCapture(e.pointerId);
       lastPoint = { x: e.clientX, y: e.clientY };
     }
 
     function onPointerMove(e: PointerEvent) {
+      e.preventDefault();
       if (!lastPoint) return;
       const dx = e.clientX - lastPoint.x;
       const dy = e.clientY - lastPoint.y;
@@ -29,20 +36,22 @@ export function usePointerPan<T extends HTMLElement>(
       onPan(dx, dy);
     }
 
-    function onPointerUpOrCancel(_: PointerEvent) {
+    function onPointerUpOrCancel(e: PointerEvent) {
+      // release the pointer capture on up/cancel
+      element.releasePointerCapture(e.pointerId);
       lastPoint = null;
     }
 
-    el.addEventListener('pointerdown', onPointerDown);
-    el.addEventListener('pointermove', onPointerMove);
-    el.addEventListener('pointerup', onPointerUpOrCancel);
-    el.addEventListener('pointercancel', onPointerUpOrCancel);
+    element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointermove', onPointerMove, { passive: false });
+    element.addEventListener('pointerup', onPointerUpOrCancel);
+    element.addEventListener('pointercancel', onPointerUpOrCancel);
 
     return () => {
-      el.removeEventListener('pointerdown', onPointerDown);
-      el.removeEventListener('pointermove', onPointerMove);
-      el.removeEventListener('pointerup', onPointerUpOrCancel);
-      el.removeEventListener('pointercancel', onPointerUpOrCancel);
+      element.removeEventListener('pointerdown', onPointerDown);
+      element.removeEventListener('pointermove', onPointerMove);
+      element.removeEventListener('pointerup', onPointerUpOrCancel);
+      element.removeEventListener('pointercancel', onPointerUpOrCancel);
     };
   }, [elementRef, onPan]);
 }

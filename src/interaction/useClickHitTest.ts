@@ -15,12 +15,13 @@ export interface UV {
  */
 export function useClickHitTest<T extends HTMLElement>(
   elementRef: RefObject<T | null>,
-  camera: CameraState,
+  cameraRef: RefObject<CameraState>,
   onClick: (uv: UV, e: MouseEvent) => void
 ): void {
   useEffect(() => {
     const el = elementRef.current;
-    if (!el) return;
+    const camera = cameraRef.current;
+    if (!el || !camera) return;
 
     function rotateX(
       v: [number, number, number],
@@ -83,5 +84,5 @@ export function useClickHitTest<T extends HTMLElement>(
     return () => {
       el.removeEventListener('click', handleClick as any);
     };
-  }, [elementRef, camera.yaw, camera.pitch, camera.fov, onClick]);
+  }, [elementRef.current, cameraRef.current, onClick]);
 }

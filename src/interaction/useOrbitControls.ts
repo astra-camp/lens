@@ -7,11 +7,16 @@ export function useOrbitControls(
 ): void {
   // pointer pan to update yaw/pitch
   usePointerPan(canvasRef, (dx, dy) => {
-    const c = canvasRef.current;
-    cameraRef.current.yaw += dx * 0.005;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    // convert pixels to radians: full width = 2π, full height = π
+    const yawDelta = (dx / canvas.width) * Math.PI * 2;
+    const pitchDelta = (dy / canvas.height) * Math.PI;
+    cameraRef.current.yaw += yawDelta;
+    // clamp pitch between -90° and +90°
     cameraRef.current.pitch = Math.max(
       -Math.PI / 2,
-      Math.min(Math.PI / 2, cameraRef.current.pitch + dy * 0.005)
+      Math.min(Math.PI / 2, cameraRef.current.pitch + pitchDelta)
     );
   });
 }
