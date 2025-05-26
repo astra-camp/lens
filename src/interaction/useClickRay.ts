@@ -1,6 +1,7 @@
 import { useEffect, RefObject } from 'react';
 import { CameraState } from '../types/CameraState';
 import { screenToRay } from '../utils/matrix';
+import { ViewSpaceCoord } from '../types/Coordinates';
 
 /**
  * React hook for translating click/tap events into a world-space ray direction.
@@ -19,7 +20,7 @@ import { screenToRay } from '../utils/matrix';
 export function useClickRay<T extends HTMLElement>(
   elementRef: RefObject<T | null>,
   cameraRef: RefObject<CameraState>,
-  onRay: (dir: [number, number, number], e: MouseEvent) => void
+  onRay: (dir: ViewSpaceCoord, e: MouseEvent) => void
 ) {
   useEffect(() => {
     const el = elementRef.current;
