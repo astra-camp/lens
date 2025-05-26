@@ -5,13 +5,17 @@ import { MeshDesc } from '../types/MeshDesc';
  * Hook to generate a UV-mapped unit-sphere mesh.
  * @param latBands Number of latitude segments (vertical)
  * @param longBands Number of longitude segments (horizontal)
- * @returns MeshDesc containing interleaved geometry
+ * @returns An object containing `mesh: MeshDesc` and `mapDirToUV(dir) => UV`
  */
 export function useSphereMesh(
   latBands: number = 40,
   longBands: number = 60
-): MeshDesc {
-  return useMemo(() => {
+): {
+  mesh: MeshDesc;
+  mapDirToUV: (dir: [number, number, number]) => { u: number; v: number };
+} {
+  // generate sphere mesh
+  const mesh = useMemo<MeshDesc>(() => {
     const positions: number[] = [];
     const uvs: number[] = [];
     const indices: number[] = [];
@@ -53,4 +57,13 @@ export function useSphereMesh(
       primitive: 'triangles',
     };
   }, [latBands, longBands]);
+
+  // map world-space ray direction to equirectangular UV
+  const mapDirToUV = ([x, y, z]: [number, number, number]) => {
+    const theta = Math.atan2(z, x); // -π to +π
+    const phi = Math.acos(y); // 0 to π
+    return { u: theta / (2 * Math.PI) + 0.5, v: phi / Math.PI };
+  };
+
+  return { mesh, mapDirToUV };
 }

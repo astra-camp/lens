@@ -40,3 +40,36 @@ export function getViewMatrix(yaw: number, pitch: number): ReadonlyMat4 {
   mat4.lookAt(out, eye, dir, up);
   return out;
 }
+
+/**
+ * Convert 2D screen coords and camera parameters into a normalized world-space ray direction.
+ * @param x      X coordinate relative to the element (pixels)
+ * @param y      Y coordinate relative to the element (pixels)
+ * @param width  Element width in pixels
+ * @param height Element height in pixels
+ * @param vFOV   Camera vertical field-of-view in radians
+ * @param yaw    Camera yaw (Y-axis rotation) in radians
+ * @param pitch  Camera pitch (X-axis rotation) in radians
+ * @returns A normalized direction vector [x, y, z]
+ */
+export function screenToRay(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  vFOV: number,
+  yaw: number,
+  pitch: number
+): [number, number, number] {
+  const ndcX = (x / width) * 2 - 1;
+  const ndcY = -((y / height) * 2 - 1);
+  const tanFov = Math.tan(vFOV / 2);
+  const vx = ndcX * tanFov * (width / height);
+  const vy = ndcY * tanFov;
+  const vz = -1;
+  const dir = vec3.fromValues(vx, vy, vz);
+  vec3.rotateX(dir, dir, [0, 0, 0], pitch);
+  vec3.rotateY(dir, dir, [0, 0, 0], yaw);
+  vec3.normalize(dir, dir);
+  return [dir[0], dir[1], dir[2]];
+}

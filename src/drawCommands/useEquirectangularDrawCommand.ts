@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { Regl, DrawCommand } from 'regl';
 
-import { useSphereMesh } from '../meshes/useSphereMesh';
+import { MeshDesc } from '../types/MeshDesc';
 import { getProjectionMatrix, getViewMatrix } from '../utils/matrix';
 import type { CameraState } from '../types/CameraState';
 import type { Shader } from '../types/Shader';
@@ -33,12 +33,9 @@ export interface EquirectangularDrawConfigOptions {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   /** Ref to the current camera state (yaw, pitch, vFOV) */
   cameraRef: React.RefObject<CameraState>;
+  mesh: MeshDesc;
   /** ImageBitmap for the panorama; if omitted, rendering is skipped */
   image?: ImageBitmap;
-  /** Latitude subdivisions of the sphere mesh (default: 40) */
-  latBands?: number;
-  /** Longitude subdivisions of the sphere mesh (default: 60) */
-  longBands?: number;
 }
 
 /**
@@ -51,13 +48,9 @@ export function useEquirectangularDrawCommand({
   regl,
   canvasRef,
   cameraRef,
+  mesh,
   image,
-  latBands = 40,
-  longBands = 60,
 }: EquirectangularDrawConfigOptions): DrawCommand {
-  // build sphere mesh (always call hook)
-  const mesh = useSphereMesh(latBands, longBands);
-
   return useMemo<DrawCommand>(() => {
     // skip if no image or no canvas
     if (!regl || !canvasRef.current || !image) {
@@ -65,7 +58,9 @@ export function useEquirectangularDrawCommand({
       return noOpDrawCommand;
     }
 
-    const { width, height } = canvasRef.current;
+    const aspect =
+      canvasRef.current.clientWidth / canvasRef.current.clientHeight;
+
     const panoTex = regl.texture({ data: image as any });
 
     return regl({
@@ -75,8 +70,7 @@ export function useEquirectangularDrawCommand({
       elements: mesh.indices,
       uniforms: {
         texture: panoTex,
-        uProjection: () =>
-          getProjectionMatrix(cameraRef.current.vFOV, width / height),
+        uProjection: () => getProjectionMatrix(cameraRef.current.vFOV, aspect),
         uView: () =>
           getViewMatrix(cameraRef.current.yaw, cameraRef.current.pitch),
       },
@@ -92,7 +86,5 @@ export function useEquirectangularDrawCommand({
     image,
     mesh,
     cameraRef.current,
-    latBands,
-    longBands,
   ]);
 }

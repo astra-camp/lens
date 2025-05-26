@@ -5,7 +5,7 @@ export * from './utils/noOpDrawCommand';
 export * from './utils/matrix';
 export * from './drawCommands/useEquirectangularDrawCommand';
 export * from './interaction/useOrbitControls';
-export * from './interaction/useClickHitTest';
+export * from './interaction/useClickRay';
 export * from './interaction/usePointerPan';
 export * from './rendering/useREGL';
 export * from './rendering/useRenderer';

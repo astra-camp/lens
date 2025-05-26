@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useOrbitControls } from '../src/interaction/useOrbitControls';
-import { useClickHitTest } from '../src/interaction/useClickHitTest';
+import { useClickRay } from '../src/interaction/useClickRay';
 import { useEquirectangularPano } from '../src/helpers/useEquirectangularPano';
 
 // Props for DemoScene story controlled via Storybook Args
@@ -9,16 +9,18 @@ interface DemoSceneProps {
 }
 
 const DemoSceneStory: React.FC<DemoSceneProps> = ({ imageUrl }) => {
-  const { canvasRef, cameraRef, loading, error } = useEquirectangularPano({
-    imageUrl,
-  });
+  const { canvasRef, cameraRef, loading, error, mapDirToUV } =
+    useEquirectangularPano({
+      imageUrl,
+    });
 
   // orbit controls for camera movement
   useOrbitControls(canvasRef, cameraRef);
 
-  // click hit-test logs UV coords
-  useClickHitTest(canvasRef, cameraRef, (uv, e) => {
-    console.log('Clicked UV coords:', uv);
+  // click ray for hit testing
+  useClickRay(canvasRef, cameraRef, (dir, e) => {
+    const uv = mapDirToUV(dir);
+    console.log('Clicked UV:', uv, 'Event:', e);
   });
 
   return (
