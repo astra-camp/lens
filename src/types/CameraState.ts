@@ -2,7 +2,7 @@
 export interface CameraState {
   yaw: number;
   pitch: number;
-  fov: number;
+  vFOV: number;
   velocity?: { yaw: number; pitch: number };
   locked?: boolean;
 }

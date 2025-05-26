@@ -2,20 +2,20 @@ import { mat4, vec3, ReadonlyMat4 } from 'gl-matrix';
 
 /**
  * Compute a perspective projection matrix.
- * @param fov Vertical field-of-view in radians
+ * @param vFOV Vertical field-of-view in radians
  * @param aspect Aspect ratio (width/height)
  * @param near Near clipping plane distance
  * @param far Far clipping plane distance
  * @returns A 4x4 projection matrix
  */
 export function getProjectionMatrix(
-  fov: number,
+  vFOV: number,
   aspect: number,
   near: number = 0.1,
   far: number = 100
 ): ReadonlyMat4 {
   const out = mat4.create();
-  mat4.perspective(out, fov, aspect, near, far);
+  mat4.perspective(out, vFOV, aspect, near, far);
   return out;
 }
 

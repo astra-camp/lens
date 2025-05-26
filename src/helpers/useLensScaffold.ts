@@ -9,7 +9,7 @@ export interface LensScaffoldOptions {
 }
 
 export function useLensScaffold({
-  initialCameraState = { yaw: 0, pitch: 0, fov: Math.PI / 2 },
+  initialCameraState = { yaw: 0, pitch: 0, vFOV: Math.PI / 3 },
   reglOptions,
 }: LensScaffoldOptions = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

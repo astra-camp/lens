@@ -10,7 +10,7 @@ export interface UV {
  * Hook to perform hit-testing on click/tap events against an equirectangular panorama.
  * Converts screen coordinates to UV coords on the panorama.
  * @param elementRef Ref to the HTML element (e.g. canvas) listening for clicks
- * @param camera Current camera state (yaw, pitch, fov)
+ * @param camera Current camera state (yaw, pitch, vFOV)
  * @param onClick Callback invoked with UV coords and the native MouseEvent
  */
 export function useClickHitTest<T extends HTMLElement>(
@@ -49,10 +49,10 @@ export function useClickHitTest<T extends HTMLElement>(
       // Convert to NDC
       const ndcX = (x / w) * 2 - 1;
       const ndcY = -((y / h) * 2 - 1);
-      const fov = camera.fov;
+      const vFOV = camera.vFOV;
       const yaw = camera.yaw;
       const pitch = camera.pitch;
-      const tanFov = Math.tan(fov / 2);
+      const tanFov = Math.tan(vFOV / 2);
       // Ray in view space
       let vx = ndcX * tanFov * (w / h);
       let vy = ndcY * tanFov;
