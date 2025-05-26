@@ -23,14 +23,18 @@ export function useLensScaffold({
 
   // resize canvas backing buffer to match CSS size × devicePixelRatio
   useEffect(() => {
-    if (canvasRef.current && regl) {
+    if (canvasRef.current) {
       const dpr = reglOptions?.pixelRatio ?? window.devicePixelRatio;
       const width = Math.floor(canvasRef.current.clientWidth * dpr);
       const height = Math.floor(canvasRef.current.clientHeight * dpr);
       canvasRef.current.width = width;
       canvasRef.current.height = height;
     }
-  }, [regl, reglOptions?.pixelRatio]);
+  }, [
+    reglOptions?.pixelRatio,
+    canvasRef.current?.clientWidth,
+    canvasRef.current?.clientHeight,
+  ]);
 
   return {
     canvasRef,
