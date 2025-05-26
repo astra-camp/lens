@@ -12,6 +12,7 @@
     "build-storybook": "storybook build",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "vitest",
+    "size": "size-limit",
     "release": "semantic-release"
   },
   "keywords": [],
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^3",
+    "@size-limit/preset-small-lib": "^11.2.0",
     "@storybook/addon-docs": "^8.6.14",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",
@@ -47,12 +49,22 @@
     "playwright": "^1.52.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.0",
-    "rollup-plugin-visualizer": "^5.14.0",
+    "size-limit": "^11.2.0",
     "storybook": "^8.6.14",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.1.4"
   },
+  "size-limit": [
+    {
+      "path": "dist/lens.es.js",
+      "limit": "40 KB"
+    },
+    {
+      "path": "dist/lens.umd.js",
+      "limit": "60 KB"
+    }
+  ],
   "eslintConfig": {
     "extends": [
       "plugin:storybook/recommended"

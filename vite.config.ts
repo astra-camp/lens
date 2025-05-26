@@ -1,18 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
-import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    dts(),
-    visualizer({
-      open: true,
-      gzipSize: true,
-      filename: 'dist/stats.html',
-    }),
-  ],
+  plugins: [react(), dts()],
   build: {
     lib: {
       entry: 'src/index.ts',
