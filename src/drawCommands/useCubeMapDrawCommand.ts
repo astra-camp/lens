@@ -1,5 +1,10 @@
 import { useMemo, useRef, useEffect } from 'react';
-import type { Regl, DrawCommand, TextureCube } from 'regl';
+import type {
+  Regl,
+  DrawCommand,
+  TextureCube,
+  TextureCubeFaceIndex,
+} from 'regl';
 
 import { MeshDesc } from '../types/MeshDesc';
 import { getProjectionMatrix, getViewMatrix } from '../utils/matrix';
@@ -55,7 +60,7 @@ export function useCubeMapDrawCommand({
   // ref to remember last uploaded tiles
   const prevTilesRef = useRef<ImageBitmap[][][] | undefined>(undefined);
   // create draw command once
-  const drawCmd = useMemo<DrawCommand>(() => {
+  return useMemo<DrawCommand>(() => {
     if (!regl || !canvasRef.current || faceTiles.length !== 6) {
       return noOpDrawCommand;
     }
@@ -63,14 +68,40 @@ export function useCubeMapDrawCommand({
     const tilesPerSide = faceTiles[0].length;
     const tileW = faceTiles[0][0][0].width;
     const faceSize = tilesPerSide * tileW;
-    // allocate empty cubemap texture
-    const tex = regl.cube({
-      width: faceSize,
-      height: faceSize,
-      mag: 'linear',
-      min: 'linear',
+
+    if (!cubeTexRef.current) {
+      cubeTexRef.current = regl.cube({
+        width: faceSize,
+        height: faceSize,
+        faces: faceTiles.map((r) => r[0][0]) as any, // use first tile of each face to get format
+        mag: 'linear',
+        min: 'linear',
+      });
+    } else if (cubeTexRef.current.width !== faceSize) {
+      cubeTexRef.current.resize(faceSize);
+    }
+
+    faceTiles.forEach((rows, faceIdx) => {
+      rows.forEach((cols, rowIdx) => {
+        cols.forEach((tile, colIdx) => {
+          // only upload if this tile changed
+          if (
+            !prevTilesRef.current ||
+            prevTilesRef.current[faceIdx]?.[rowIdx]?.[colIdx] !== tile
+          ) {
+            cubeTexRef.current!.subimage(
+              faceIdx as TextureCubeFaceIndex,
+              tile as any,
+              colIdx * tileW,
+              rowIdx * tileW
+            );
+          }
+        });
+      });
     });
-    cubeTexRef.current = tex;
+    // remember current tiles for next diff
+    prevTilesRef.current = faceTiles;
+
     // return draw command binding the cubemap
     return regl({
       vert: cubeMapShader.vert,
@@ -87,41 +118,5 @@ export function useCubeMapDrawCommand({
       depth: { enable: false },
       cull: { enable: true, face: 'front' },
     });
-  }, [regl, canvasRef.current, mesh, cameraRef.current]);
-
-  useEffect(() => {
-    const tex = cubeTexRef.current;
-    if (!tex || faceTiles.length !== 6) return;
-
-    const prev = prevTilesRef.current;
-    // derive face and tile sizes
-    const tilesPerSide = faceTiles[0].length;
-    const tileW = faceTiles[0][0][0].width;
-    const faceSize = tilesPerSide * tileW;
-
-    if (tex.width !== faceSize) {
-      // resize texture if face size changed
-      tex.resize(faceSize);
-    }
-
-    faceTiles.forEach((rows, faceIdx) => {
-      rows.forEach((cols, rowIdx) => {
-        cols.forEach((tile, colIdx) => {
-          // only upload if this tile changed
-          if (!prev || prev[faceIdx]?.[rowIdx]?.[colIdx] !== tile) {
-            tex.subimage(
-              faceIdx as any,
-              tile as any,
-              colIdx * tileW,
-              rowIdx * tileW
-            );
-          }
-        });
-      });
-    });
-    // remember current tiles for next diff
-    prevTilesRef.current = faceTiles;
-  }, [faceTiles]);
-
-  return drawCmd;
+  }, [regl, canvasRef.current, mesh, cameraRef.current, faceTiles]);
 }

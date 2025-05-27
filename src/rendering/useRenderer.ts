@@ -40,7 +40,7 @@ export function useRenderer({
 
   useEffect(() => {
     cmdsRef.current = cmds;
-  }, [/* was drawCommands */ cmds]);
+  }, [cmds]);
   useEffect(() => {
     frameCbRef.current = onFrame;
   }, [onFrame]);
