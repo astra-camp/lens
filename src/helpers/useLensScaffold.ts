@@ -9,7 +9,7 @@ export interface LensScaffoldOptions {
 }
 
 export function useLensScaffold({
-  initialCameraState = { yaw: 0, pitch: 0, vFOV: Math.PI / 3 },
+  initialCameraState = { yaw: 0, pitch: 0, vFOV: Math.PI / 3, aspect: 1 },
   reglOptions,
 }: LensScaffoldOptions = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -29,6 +29,9 @@ export function useLensScaffold({
       const height = Math.floor(canvasRef.current.clientHeight * dpr);
       canvasRef.current.width = width;
       canvasRef.current.height = height;
+      // update camera aspect ratio to match canvas dimensions
+      cameraRef.current.aspect =
+        canvasRef.current.clientWidth / canvasRef.current.clientHeight;
     }
   }, [
     reglOptions?.pixelRatio,

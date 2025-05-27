@@ -58,9 +58,6 @@ export function useEquirectangularDrawCommand({
       return noOpDrawCommand;
     }
 
-    const aspect =
-      canvasRef.current.clientWidth / canvasRef.current.clientHeight;
-
     const panoTex = regl.texture({ data: image as any });
 
     return regl({
@@ -70,7 +67,8 @@ export function useEquirectangularDrawCommand({
       elements: mesh.indices,
       uniforms: {
         texture: panoTex,
-        uProjection: () => getProjectionMatrix(cameraRef.current.vFOV, aspect),
+        uProjection: () =>
+          getProjectionMatrix(cameraRef.current.vFOV, cameraRef.current.aspect),
         uView: () =>
           getViewMatrix(cameraRef.current.yaw, cameraRef.current.pitch),
       },

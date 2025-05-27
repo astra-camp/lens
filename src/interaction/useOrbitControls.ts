@@ -18,8 +18,7 @@ export function useOrbitControls(
     const dyDev = dy * pixelRatio;
 
     // now use dxDev/dyDev against canvas.width/height
-    const vFOV = cameraRef.current.vFOV;
-    const aspect = canvas.width / canvas.height;
+    const { vFOV, aspect } = cameraRef.current;
     const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * aspect);
     const yawDelta = (dxDev / canvas.width) * hFOV;
     const pitchDelta = (dyDev / canvas.height) * vFOV;

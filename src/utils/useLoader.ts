@@ -52,14 +52,23 @@ export function useLoader<T>(
   return { data, loading, error, reload };
 }
 
-// load bitmap image from provided URL
-export function useImageLoader(imageUrl: string): LoaderState<ImageBitmap> {
+// load bitmap images from provided URLs
+export function useImageLoader(
+  imageUrls: string[]
+): LoaderState<ImageBitmap[]> {
   return useLoader(async () => {
-    const res = await fetch(imageUrl);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch image: ${res.status} ${res.statusText}`);
-    }
-    const blob = await res.blob();
-    return createImageBitmap(blob);
-  }, [imageUrl]);
+    const bitmaps = await Promise.all(
+      imageUrls.map(async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(
+            `Failed to fetch image: ${res.status} ${res.statusText}`
+          );
+        }
+        const blob = await res.blob();
+        return createImageBitmap(blob);
+      })
+    );
+    return bitmaps;
+  }, [JSON.stringify(imageUrls)]);
 }

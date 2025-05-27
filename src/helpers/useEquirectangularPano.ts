@@ -19,7 +19,7 @@ export function useEquirectangularPano({
   // scaffold lens with regl, camera, canvas
   const { regl, cameraRef, canvasRef } = useLensScaffold(lensOptions);
 
-  const { data, loading, error } = useImageLoader(imageUrl);
+  const { data, loading, error } = useImageLoader([imageUrl]);
 
   const { mesh, mapDirToUV } = useSphereMesh(latBands, longBands);
 
@@ -29,7 +29,7 @@ export function useEquirectangularPano({
     canvasRef,
     cameraRef,
     mesh,
-    image: data,
+    image: data && data[0],
   });
 
   // render loop
