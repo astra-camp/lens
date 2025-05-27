@@ -94,8 +94,16 @@ export function useCubeMapDrawCommand({
     if (!tex || faceTiles.length !== 6) return;
 
     const prev = prevTilesRef.current;
+    // derive face and tile sizes
+    const tilesPerSide = faceTiles[0].length;
     const tileW = faceTiles[0][0][0].width;
-    const tileH = faceTiles[0][0][0].height;
+    const faceSize = tilesPerSide * tileW;
+
+    if (tex.width !== faceSize) {
+      // resize texture if face size changed
+      tex.resize(faceSize);
+    }
+
     faceTiles.forEach((rows, faceIdx) => {
       rows.forEach((cols, rowIdx) => {
         cols.forEach((tile, colIdx) => {
@@ -105,7 +113,7 @@ export function useCubeMapDrawCommand({
               faceIdx as any,
               tile as any,
               colIdx * tileW,
-              rowIdx * tileH
+              rowIdx * tileW
             );
           }
         });
