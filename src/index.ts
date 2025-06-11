@@ -1,17 +1,17 @@
-export * from './helpers/useLensScaffold';
-export * from './helpers/useEquirectangularPano';
-export * from './utils/useLoader';
-export * from './utils/noOpDrawCommand';
-export * from './utils/matrix';
-export * from './drawCommands/useEquirectangularDrawCommand';
-export * from './interaction/useOrbitControls';
-export * from './interaction/useClickRay';
-export * from './interaction/usePointerPan';
-export * from './rendering/useREGL';
-export * from './rendering/useRenderer';
-export * from './meshes/useSphereMesh';
-export * from './plugins/foo';
-export * from './types/CameraState';
-export * from './types/FrameContext';
-export * from './types/MeshDesc';
-export * from './types/Shader';
+// Entry point for @astra-camp/lens package
+
+export * from './core';
+
+// Geometry plugins
+// export { cubeMapPano } from './plugins/geometry/cubeMapPano';
+// export type { CubeMapPanoProps } from './plugins/geometry/cubeMapPano';
+export { equirectangularPano } from './plugins/geometry/equirectangularPano';
+export type { EquirectangularPanoProps } from './plugins/geometry/equirectangularPano';
+
+// Interaction plugins
+export { clickRay } from './plugins/interaction/clickRay';
+export { pointerPan } from './plugins/interaction/pointerPan';
+export { orbitControls } from './plugins/interaction/orbitControls';
+
+// Tour plugin
+export * from './plugins/tour';

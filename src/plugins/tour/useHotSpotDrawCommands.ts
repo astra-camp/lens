@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import type { Regl, DrawCommand, InitializationOptions } from 'regl';
-import type { CameraState } from '../../types/CameraState';
-import { getProjectionMatrix, getViewMatrix } from '../../utils/matrix';
-import { noOpDrawCommand } from '../../utils/noOpDrawCommand';
-import type { Shader } from '../../types/Shader';
+import type { CameraState } from '../../core/types/CameraState';
+import { getProjectionMatrix, getViewMatrix } from '../../core/helpers';
+import { noOpDrawCommand } from '../../core/noOpDrawCommand';
+import type { Shader } from '../../core/types/Shader';
 import type { HotSpot } from './types';
 
 const pointShader: Shader = {

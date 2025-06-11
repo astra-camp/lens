@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useOrbitControls } from '../src/interaction/useOrbitControls';
-import { useClickRay } from '../src/interaction/useClickRay';
-import { useEquirectangularPano } from '../src/helpers/useEquirectangularPano';
+import { orbitControls } from '../src/plugins/interaction/orbitControls';
+import { clickRay } from '../src/plugins/interaction/clickRay';
+import { equirectangularPano } from '../src/plugins/geometry/equirectangularPano';
+import { useImageLoader } from '../src/core/resources/useImageLoader';
+import { useLens } from '../src';
+import { useMemo } from 'react';
+import livingUrl from './images/Living_000.png?url';
 
 // Props for EquirectangularPano story controlled via Storybook Args
 interface EquirectangularPanoProps {
@@ -11,19 +15,20 @@ interface EquirectangularPanoProps {
 const EquirectangularPanoStory: React.FC<EquirectangularPanoProps> = ({
   imageUrl,
 }) => {
-  const { canvasRef, cameraRef, loading, error, mapDirToUV } =
-    useEquirectangularPano({
-      imageUrl,
-    });
+  const { data, loading, error } = useImageLoader([livingUrl]);
 
-  // orbit controls for camera movement
-  useOrbitControls(canvasRef, cameraRef);
+  const plugins = useMemo(() => {
+    if (!data || data.length === 0) {
+      return [];
+    }
+    return [
+      equirectangularPano({ image: data[0] }),
+      orbitControls(),
+      clickRay((dir) => console.log(dir)),
+    ];
+  }, [data]);
 
-  // click ray for hit testing
-  useClickRay(canvasRef, cameraRef, (dir, e) => {
-    const uv = mapDirToUV(dir);
-    console.log('Clicked UV:', uv, 'Event:', e);
-  });
+  const { canvasRef } = useLens({ plugins });
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>

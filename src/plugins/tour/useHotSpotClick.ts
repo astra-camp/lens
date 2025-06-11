@@ -1,7 +1,7 @@
 import { RefObject } from 'react';
-import { useClickRay } from '../../interaction/useClickRay';
-import type { CameraState } from '../../types/CameraState';
-import type { ViewSpaceCoord } from '../../types/Coordinates';
+import { clickRay } from '../interaction/clickRay';
+import type { CameraState } from '../../core/types/CameraState';
+import type { ViewSpaceCoord } from '../../core/types/Coordinates';
 import type { HotSpot } from './types';
 
 /**
@@ -27,15 +27,15 @@ export function useHotSpotClick<T extends HTMLElement>(
   // Precompute dot product threshold
   const dotThreshold = Math.cos(angleThreshold);
 
-  useClickRay(elementRef, cameraRef, (dir, e) => {
-    for (const hs of hotspots) {
-      // Dot product between click direction and hotspot coordinate
-      const dot =
-        dir[0] * hs.coord[0] + dir[1] * hs.coord[1] + dir[2] * hs.coord[2];
-      if (dot >= dotThreshold) {
-        onHotSpotClick(hs, dir, e);
-        break;
-      }
-    }
-  });
+  // useClickRay(elementRef, cameraRef, (dir, e) => {
+  //   for (const hs of hotspots) {
+  //     // Dot product between click direction and hotspot coordinate
+  //     const dot =
+  //       dir[0] * hs.coord[0] + dir[1] * hs.coord[1] + dir[2] * hs.coord[2];
+  //     if (dot >= dotThreshold) {
+  //       onHotSpotClick(hs, dir, e);
+  //       break;
+  //     }
+  //   }
+  // });
 }
