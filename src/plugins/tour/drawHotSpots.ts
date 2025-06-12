@@ -1,10 +1,7 @@
-import { useMemo } from 'react';
-import type { Regl, DrawCommand, InitializationOptions } from 'regl';
-import type { CameraState } from '../../core/types/CameraState';
-import { getProjectionMatrix, getViewMatrix } from '../../core/helpers';
-import { noOpDrawCommand } from '../../core/noOpDrawCommand';
+import { getProjectionMatrix, getViewMatrix } from '../../utils/matrix';
 import type { Shader } from '../../core/types/Shader';
 import type { HotSpot } from './types';
+import type { Plugin } from '../../core';
 
 const pointShader: Shader = {
   vert: `
@@ -45,31 +42,24 @@ const pointShader: Shader = {
 
 export interface HotSpotDrawOptions {
   hotspots: HotSpot[];
-  regl: Regl | null;
-  reglOptions?: InitializationOptions;
-  canvasRef: React.RefObject<HTMLCanvasElement | null>;
-  cameraRef: React.RefObject<CameraState>;
   /** RGBA color of the hotspot */
   color?: [number, number, number, number];
   /** Size in pixels of the hotspot */
   size?: number;
 }
 
-export function useHotSpotDrawCommands({
-  regl,
-  reglOptions,
-  canvasRef,
-  cameraRef,
+export function drawHotSpots({
   hotspots,
   color = [1, 1, 1, 1],
   size = 30,
-}: HotSpotDrawOptions): DrawCommand {
-  return useMemo<DrawCommand>(() => {
-    if (!regl || !canvasRef.current || hotspots.length === 0) {
-      return noOpDrawCommand;
+}: HotSpotDrawOptions): Plugin {
+  return (ctx) => {
+    const { regl, cameraRef, canvasRef } = ctx;
+    if (!regl || !canvasRef.current || !hotspots.length) {
+      return ctx;
     }
 
-    return regl({
+    const drawCommand = regl({
       vert: pointShader.vert,
       frag: pointShader.frag,
       attributes: { aPosition: hotspots.map((h) => h.coord) },
@@ -78,8 +68,7 @@ export function useHotSpotDrawCommands({
           getProjectionMatrix(cameraRef.current.vFOV, cameraRef.current.aspect),
         uView: () =>
           getViewMatrix(cameraRef.current.yaw, cameraRef.current.pitch),
-        uPointSize: () =>
-          size * (reglOptions?.pixelRatio ?? window.devicePixelRatio),
+        uPointSize: ({ pixelRatio }) => size * pixelRatio,
         uColor: color,
       },
       count: hotspots.length,
@@ -90,5 +79,11 @@ export function useHotSpotDrawCommands({
         func: { src: 'src alpha', dst: 'one minus src alpha' },
       },
     });
-  }, [regl, canvasRef.current, cameraRef.current, hotspots, color, size]);
+
+    // Return context with the draw command
+    return {
+      ...ctx,
+      drawCommand,
+    };
+  };
 }

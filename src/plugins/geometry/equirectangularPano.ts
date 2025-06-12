@@ -1,7 +1,7 @@
 import { createSphereMesh } from './meshes/sphereMesh';
 import type { Shader } from '../../core/types/Shader';
 import type { Plugin } from '../../core/types/Plugin';
-import { getProjectionMatrix, getViewMatrix } from '../../core/helpers';
+import { getProjectionMatrix, getViewMatrix } from '../../utils/matrix';
 
 const latLongShader: Shader = {
   vert: `

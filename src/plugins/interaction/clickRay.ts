@@ -1,4 +1,4 @@
-import { screenToRay } from '../../core/helpers';
+import { screenToRay } from '../../utils/matrix';
 import { ViewSpaceCoord } from '../../core/types/Coordinates';
 import { Plugin } from '../../core/types/Plugin';
 

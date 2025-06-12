@@ -1,3 +1,3 @@
 export type { HotSpot, Scene } from './types';
-export { useHotSpotDrawCommands } from './useHotSpotDrawCommands';
-export { useHotSpotClick } from './useHotSpotClick';
+export { drawHotSpots } from './drawHotSpots';
+export { hotSpotClick } from './hotSpotClick';

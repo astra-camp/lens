@@ -76,7 +76,7 @@ export function useLens({
   // 4) drive regl draw/onFrame from the accumulated callbacks
   useRenderer({
     regl,
-    draw: () => ctx.drawCommands,
+    drawCommands: ctx.drawCommands,
     onFrame: (frame: FrameContext) =>
       ctx.frameCallbacks.forEach((fn) => fn({ ...ctx, ...frame })),
     clearOptions,

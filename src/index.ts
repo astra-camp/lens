@@ -13,5 +13,10 @@ export { clickRay } from './plugins/interaction/clickRay';
 export { pointerPan } from './plugins/interaction/pointerPan';
 export { orbitControls } from './plugins/interaction/orbitControls';
 
+// Utils
+export { useImageLoader } from './utils/useImageLoader';
+export { useLoader } from './utils/useLoader';
+export * from './utils/matrix';
+
 // Tour plugin
 export * from './plugins/tour';

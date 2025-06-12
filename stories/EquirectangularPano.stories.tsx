@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { orbitControls } from '../src/plugins/interaction/orbitControls';
 import { clickRay } from '../src/plugins/interaction/clickRay';
 import { equirectangularPano } from '../src/plugins/geometry/equirectangularPano';
-import { useImageLoader } from '../src/core/resources/useImageLoader';
+import { useImageLoader } from '../src/utils/useImageLoader';
 import { useLens } from '../src';
 import { useMemo } from 'react';
 import livingUrl from './images/Living_000.png?url';

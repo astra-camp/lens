@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { DrawCommand, Regl, ClearOptions } from 'regl';
 import type { FrameContext } from './types/FrameContext';
 
 // parameters object for useRenderer
 export interface UseRendererParams {
   regl: Regl | null;
-  draw: () => DrawCommand[];
+  drawCommands: DrawCommand[];
   onFrame?: (ctx: FrameContext) => void;
   /** Optional clear parameters (color/depth). */
   clearOptions?: ClearOptions;
@@ -18,12 +18,17 @@ export interface UseRendererParams {
  */
 export function useRenderer({
   regl,
-  draw,
+  drawCommands,
   onFrame = () => {},
   clearOptions = { color: [0, 0, 0, 0], depth: 1 },
 }: UseRendererParams): void {
   const lastTimeRef = useRef(0);
   const frameCbRef = useRef(onFrame);
+  const cmdsRef = useRef<DrawCommand[]>(drawCommands);
+
+  useEffect(() => {
+    cmdsRef.current = drawCommands;
+  }, [drawCommands]);
 
   useEffect(() => {
     frameCbRef.current = onFrame;
@@ -39,7 +44,7 @@ export function useRenderer({
       frameCbRef.current({ dt, elapsed: time, tick });
 
       regl.clear(clearOptions);
-      draw().forEach((cmd) => cmd());
+      cmdsRef.current.forEach((cmd) => cmd());
     });
     return () => {
       frame.cancel();
