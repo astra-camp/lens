@@ -33,35 +33,34 @@ export function equirectangularPano({
   latBands,
   longBands,
 }: EquirectangularPanoProps): Plugin {
-  return (ctx) => {
+  return (getState) => {
     const mesh = createSphereMesh(latBands, longBands);
+    const { regl, drawCommands } = getState();
 
-    const { regl, cameraRef, canvasRef } = ctx;
+    const texture = regl.texture({ data: image as any });
 
-    if (!regl || !canvasRef.current || !image) {
-      return ctx;
-    }
-
-    const panoTex = regl.texture({ data: image as any });
     const command = regl({
       vert: latLongShader.vert,
       frag: latLongShader.frag,
       attributes: { aPosition: mesh.positions, aUV: mesh.uvs },
       elements: mesh.indices,
       uniforms: {
-        texture: panoTex,
-        uProjection: () =>
-          getProjectionMatrix(cameraRef.current.vFOV, cameraRef.current.aspect),
-        uView: () =>
-          getViewMatrix(cameraRef.current.yaw, cameraRef.current.pitch),
+        texture,
+        uProjection: () => {
+          const { camera } = getState();
+          return getProjectionMatrix(camera.vFOV, camera.aspect);
+        },
+        uView: () => {
+          const { camera } = getState();
+          return getViewMatrix(camera.yaw, camera.pitch);
+        },
       },
       depth: { enable: true },
       primitive: mesh.indices ? 'triangles' : 'triangle strip',
     });
 
     return {
-      ...ctx,
-      drawCommands: [...ctx.drawCommands, command],
+      drawCommands: [...drawCommands, command],
     };
   };
 }

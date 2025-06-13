@@ -1,10 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState, useMemo } from 'react';
 import {
-  useHotSpotDrawCommands,
-  useHotSpotClick,
-  Scene,
-} from '../src/plugins/tour';
+  useLens,
+  equirectangularPano,
+  drawHotSpots,
+  hotSpotClick,
+  orbitControls,
+  useImageLoader,
+  type Scene,
+} from '../src';
 
 import livingUrl from './images/Living_000.png?url';
 import bedroomUrl from './images/Bedroom_000.png?url';
@@ -80,80 +84,59 @@ interface DemoSceneProps {
 }
 
 const DemoSceneStory: React.FC<DemoSceneProps> = ({ imageUrl }) => {
-  return <div />;
+  const [sceneIndex, setSceneIndex] = useState<number>(0);
 
-  // const [sceneIndex, setSceneIndex] = useState<number>(0);
+  const currentScene = useMemo(() => {
+    return scenes[sceneIndex];
+  }, [sceneIndex]);
 
-  // const currentScene = useMemo(() => {
-  //   return scenes[sceneIndex];
-  // }, [sceneIndex]);
+  const { data, loading, error } = useImageLoader(
+    scenes.map((scene) => scene.imageUrl)
+  );
 
-  // const { regl, cameraRef, canvasRef } = useLensScaffold();
+  const plugins = useMemo(() => [
+    equirectangularPano({
+      image: data?.[sceneIndex] ?? null,
+      latBands: 32,
+      longBands: 64,
+    }),
+    drawHotSpots({
+      hotspots: currentScene.hotSpots,
+      size: 30,
+    }),
+    orbitControls(),
+    hotSpotClick(currentScene.hotSpots, (hotspot) => {
+      console.log('Hotspot clicked:', hotspot);
+      const nextSceneIndex = scenes.findIndex(
+        (scene) => scene.id === hotspot.linkTo
+      );
+      if (nextSceneIndex !== -1) {
+        setSceneIndex(nextSceneIndex);
+      }
+    }),
+  ], [data]);
 
-  // const { data, loading, error } = useImageLoader(
-  //   scenes.map((scene) => scene.imageUrl)
-  // );
+  const { canvasRef, setState } = useLens({
+    plugins,
+  });
 
-  // const { mesh, mapDirToUV } = useSphereMesh();
-
-  // // draw config with custom subdivisions
-  // const drawPano = useEquirectangularDrawCommand({
-  //   regl,
-  //   canvasRef,
-  //   cameraRef,
-  //   mesh,
-  //   image: data && data[sceneIndex],
-  // });
-
-  // const drawHotSpot = useHotSpotDrawCommands({
-  //   regl,
-  //   canvasRef,
-  //   cameraRef,
-  //   hotspots: currentScene.hotSpots,
-  //   size: 30,
-  // });
-
-  // // render loop
-  // useRenderer({
-  //   regl,
-  //   commands: [drawPano, drawHotSpot],
-  // });
-
-  // // orbit controls for camera movement
-  // useOrbitControls(canvasRef, cameraRef);
-
-  // // click ray for hit testing
-  // useClickRay(canvasRef, cameraRef, (dir, e) => {
-  //   console.log('Clicked direction:', dir, 'Event:', e);
-  // });
-
-  // useHotSpotClick(canvasRef, cameraRef, currentScene.hotSpots, (hotspot) => {
-  //   console.log('Hotspot clicked:', hotspot);
-  //   const nextSceneIndex = scenes.findIndex(
-  //     (scene) => scene.id === hotspot.linkTo
-  //   );
-  //   if (nextSceneIndex !== -1) {
-  //     setSceneIndex(nextSceneIndex);
-  //   }
-  // });
-
-  // return (
-  //   <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-  //     {loading && <p>Loading panorama...</p>}
-  //     {error && <p>Error loading panorama</p>}
-  //     <canvas
-  //       id="renderer"
-  //       ref={canvasRef}
-  //       style={{
-  //         position: 'absolute',
-  //         top: 0,
-  //         left: 0,
-  //         width: '100%',
-  //         height: '100%',
-  //       }}
-  //     />
-  //   </div>
-  // );
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
+      {loading && <p>Loading panorama...</p>}
+      {error && <p>Error loading panorama</p>}
+      <canvas
+        id="renderer"
+        ref={canvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      />
+    </div>
+  );
 };
 
 const meta: Meta<DemoSceneProps> = {

@@ -1,7 +1,8 @@
 import { getProjectionMatrix, getViewMatrix } from '../../utils/matrix';
 import type { Shader } from '../../core/types/Shader';
 import type { HotSpot } from './types';
-import type { Plugin } from '../../core';
+import type { Plugin } from '../../core/types/Plugin';
+import type { LensState } from '../../core/types/LensState';
 
 const pointShader: Shader = {
   vert: `
@@ -53,22 +54,24 @@ export function drawHotSpots({
   color = [1, 1, 1, 1],
   size = 30,
 }: HotSpotDrawOptions): Plugin {
-  return (ctx) => {
-    const { regl, cameraRef, canvasRef } = ctx;
-    if (!regl || !canvasRef.current || !hotspots.length) {
-      return ctx;
-    }
+  return (getState) => {
+
+    const { regl } = getState();
 
     const drawCommand = regl({
       vert: pointShader.vert,
       frag: pointShader.frag,
       attributes: { aPosition: hotspots.map((h) => h.coord) },
       uniforms: {
-        uProjection: () =>
-          getProjectionMatrix(cameraRef.current.vFOV, cameraRef.current.aspect),
-        uView: () =>
-          getViewMatrix(cameraRef.current.yaw, cameraRef.current.pitch),
-        uPointSize: ({ pixelRatio }) => size * pixelRatio,
+        uProjection: () => {
+          const { camera } = getState();
+          return getProjectionMatrix(camera.vFOV, camera.aspect);
+        },
+        uView: () => {
+          const { camera } = getState();
+          return getViewMatrix(camera.yaw, camera.pitch)
+        },
+        uPointSize: ({ pixelRatio }: { pixelRatio: number }) => size * pixelRatio,
         uColor: color,
       },
       count: hotspots.length,
@@ -80,10 +83,9 @@ export function drawHotSpots({
       },
     });
 
-    // Return context with the draw command
+
     return {
-      ...ctx,
-      drawCommand,
+      drawCommands: [...getState().drawCommands, drawCommand]
     };
   };
 }

@@ -5,12 +5,12 @@ import { Plugin } from '../../core/types/Plugin';
 export function clickRay(
   onRay: (dir: ViewSpaceCoord, e: MouseEvent) => void
 ): Plugin {
-  return (ctx) => {
+  return (getState, _, { onSetup, onCleanup }) => {
     function onClick(e: MouseEvent) {
-      const rect = ctx!.canvasRef.current!.getBoundingClientRect();
+      const { canvas, camera } = getState();
+      const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const camera = ctx!.cameraRef.current;
       const dir = screenToRay(
         x,
         y,
@@ -24,17 +24,17 @@ export function clickRay(
     }
 
     // register side-effects in LensContext lifecycle
-    ctx.setupCallbacks.push(() => {
-      const el = ctx.canvasRef.current;
-      if (!el) return;
-      el.addEventListener('click', onClick);
+    onSetup(() => {
+      const { canvas } = getState();
+      if (!canvas) return;
+      canvas.addEventListener('click', onClick);
     });
-    ctx.cleanupCallbacks.push(() => {
-      const el = ctx.canvasRef.current;
-      if (!el) return;
-      el.removeEventListener('click', onClick);
+    onCleanup(() => {
+      const { canvas } = getState();
+      if (!canvas) return;
+      canvas.removeEventListener('click', onClick);
     });
 
-    return ctx;
+    return {};
   };
 }

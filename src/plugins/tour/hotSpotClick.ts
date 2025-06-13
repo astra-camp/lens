@@ -15,7 +15,7 @@ export function hotSpotClick<T extends HTMLElement>(
   // Precompute dot product threshold
   const dotThreshold = Math.cos(angleThreshold);
 
-  return (ctx) =>
+  return (getState, setState, registerCallbacks) =>
     clickRay((dir, e) => {
       for (const hs of hotspots) {
         // Dot product between click direction and hotspot coordinate
@@ -26,5 +26,5 @@ export function hotSpotClick<T extends HTMLElement>(
           break;
         }
       }
-    })(ctx);
+    })(getState, setState, registerCallbacks);
 }
