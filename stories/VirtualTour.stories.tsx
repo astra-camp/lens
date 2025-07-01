@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useMemo, useState } from 'react';
 import {
+  useImageLoader,
   useLens,
   equirectangularPano,
   drawHotSpots,
@@ -9,7 +10,6 @@ import {
   coordinateFinder,
   type HotSpot,
 } from '../src';
-import { useImageLoader } from '../src/utils/useImageLoader';
 
 // Sample panorama images
 import livingUrl from './images/Living_000.png?url';
