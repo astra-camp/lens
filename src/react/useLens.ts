@@ -9,7 +9,7 @@ export function useLens(opts: UseLensOptions) {
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // Function to update canvas size and notify lens
-  const updateCanvasSize = () => {
+  const updateCanvasSize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -33,7 +33,7 @@ export function useLens(opts: UseLensOptions) {
         }));
       }
     }
-  };
+  }, [opts.reglOptions?.pixelRatio, window.devicePixelRatio]);
 
   // Callback ref that gets called when canvas is set
   const setCanvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
@@ -47,19 +47,16 @@ export function useLens(opts: UseLensOptions) {
     
     // Create new lens if canvas is available and lens doesn't exist
     if (canvas && !lensRef.current) {
-      updateCanvasSize();
+      // Create lens with empty plugins initially, then update them
       const lens = new Lens({ canvas, ...opts });
       lensRef.current = lens;
     }
-  }, [opts.reglOptions]);
+  }, []);
 
   // Set up resize observer to handle canvas size changes
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    // Initial size setup
-    updateCanvasSize();
 
     // Set up resize observer
     resizeObserverRef.current = new ResizeObserver(() => {
@@ -71,7 +68,7 @@ export function useLens(opts: UseLensOptions) {
     return () => {
       resizeObserverRef.current?.disconnect();
     };
-  }, [opts.reglOptions?.pixelRatio]);
+  }, [updateCanvasSize]);
 
   // Update plugins when they change (without recreating lens)
   useEffect(() => {

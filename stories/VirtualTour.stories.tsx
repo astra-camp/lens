@@ -110,39 +110,54 @@ const VirtualTour = () => {
 
   const { canvasRef } = useLens({ plugins });
 
-  if (loading) {
-    return <div style={{ 
-      width: '100%', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      fontSize: '18px'
-    }}>
-      Loading {currentScene}...
-    </div>;
-  }
-
-  if (error) {
-    return <div style={{ 
-      width: '100%', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      fontSize: '18px',
-      color: 'red'
-    }}>
-      Error loading {currentScene}: {error.message}
-    </div>;
-  }
-
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <canvas
         ref={canvasRef}
         style={{ width: '100%', height: '100%' }}
       />
+      
+      {/* Loading overlay */}
+      {loading && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(0, 0, 0, 0.5)',
+          color: 'white',
+          fontSize: '18px',
+          zIndex: 10,
+        }}>
+          Loading {currentScene}...
+        </div>
+      )}
+      
+      {/* Error overlay */}
+      {error && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(0, 0, 0, 0.7)',
+          color: 'red',
+          fontSize: '18px',
+          zIndex: 10,
+        }}>
+          Error loading {currentScene}: {error.message}
+        </div>
+      )}
+      
+      {/* Room indicator */}
       <div style={{
         position: 'absolute',
         top: 20,
@@ -152,6 +167,7 @@ const VirtualTour = () => {
         padding: '10px 20px',
         borderRadius: 4,
         fontFamily: 'monospace',
+        zIndex: 5,
       }}>
         Current Room: {currentScene.charAt(0).toUpperCase() + currentScene.slice(1)}
       </div>
