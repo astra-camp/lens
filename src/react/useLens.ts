@@ -33,7 +33,7 @@ export function useLens(opts: UseLensOptions) {
         }));
       }
     }
-  }, [opts.reglOptions?.pixelRatio, window?.devicePixelRatio]);
+  }, [opts.reglOptions?.pixelRatio]);
 
   // Callback ref that gets called when canvas is set
   const setCanvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
