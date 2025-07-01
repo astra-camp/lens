@@ -6,6 +6,7 @@ import {
   drawHotSpots,
   hotSpotClick,
   orbitControls,
+  coordinateFinder,
   type HotSpot,
 } from '../src';
 import { useImageLoader } from '../src/utils/useImageLoader';
@@ -21,15 +22,15 @@ const scenes = {
     imageUrl: livingUrl,
     hotspots: [
       {
-        coord: [-0.9943646192550659, -0.05175129696726799, 0.09252454340457916],
+        coord: [0.171354, -0.063197, -0.983180],
         linkTo: 'bedroom',
       },
       {
-        coord: [-0.8604172468185425, -0.5092486143112183, 0.01865598000586033],
+        coord: [0.247295, -0.563549, -0.788199],
         linkTo: 'hall',
       },
       {
-        coord: [-0.9633703827857971, -0.2169598937034607, -0.15762574970722198],
+        coord: [0.446068, -0.242503, -0.861519],
         linkTo: 'bathroom',
       },
     ] as HotSpot[],
@@ -38,11 +39,11 @@ const scenes = {
     imageUrl: bedroomUrl,
     hotspots: [
       {
-        coord: [-0.10512484610080719, -0.5808870792388916, 0.8071672320365906],
+        coord: [-0.008295, -0.519876, 0.854202],
         linkTo: 'hall',
       },
       {
-        coord: [-0.06090390682220459, -0.140432208776474, 0.9882153272628784],
+        coord: [-0.020365, -0.225596, 0.974008],
         linkTo: 'living',
       },
     ] as HotSpot[],
@@ -51,15 +52,15 @@ const scenes = {
     imageUrl: hallUrl,
     hotspots: [
       {
-        coord: [-0.9209504127502441, -0.3753415644168854, -0.1047329381108284],
+        coord: [0.991889, -0.117303, 0.048946],
         linkTo: 'bathroom',
       },
       {
-        coord: [0.017078520730137825, -0.4127347767353058, -0.9106911420822144],
+        coord: [-0.038488, -0.133468, 0.990306],
         linkTo: 'living',
       },
       {
-        coord: [-0.08906751871109009, -0.3641025722026825, 0.9270902276039124],
+        coord: [0.091310, -0.157245, -0.983329],
         linkTo: 'bedroom',
       },
     ] as HotSpot[],
@@ -68,7 +69,7 @@ const scenes = {
     imageUrl: bathroomUrl,
     hotspots: [
       {
-        coord: [0.04071690887212753, -0.2330167591571808, -0.9716199636459351],
+        coord: [-0.983526, -0.180553, -0.008747],
         linkTo: 'hall',
       },
     ] as HotSpot[],
@@ -77,6 +78,7 @@ const scenes = {
 
 const VirtualTour = () => {
   const [currentScene, setCurrentScene] = useState<keyof typeof scenes>('living');
+  const [showCoordinateFinder, setShowCoordinateFinder] = useState(false);
   
   // Lazy load only the current scene's image
   const { data: images, loading, error } = useImageLoader([scenes[currentScene].imageUrl]);
@@ -91,7 +93,7 @@ const VirtualTour = () => {
 
     const currentSceneData = scenes[currentScene];
     
-    return [
+    const basePlugins = [
       equirectangularPano({ image: currentImage }),
       orbitControls(),
       drawHotSpots({
@@ -106,7 +108,21 @@ const VirtualTour = () => {
         }
       ),
     ];
-  }, [currentScene, currentImage]);
+
+    // Add coordinate finder if enabled
+    if (showCoordinateFinder) {
+      basePlugins.push(
+        coordinateFinder({
+          enabled: true,
+          showCoordinates: true,
+          copyOnClick: true,
+          tooltipOffset: [10, -30],
+        })
+      );
+    }
+
+    return basePlugins;
+  }, [currentScene, currentImage, showCoordinateFinder]);
 
   const { canvasRef } = useLens({ plugins });
 
@@ -170,6 +186,29 @@ const VirtualTour = () => {
         zIndex: 5,
       }}>
         Current Room: {currentScene.charAt(0).toUpperCase() + currentScene.slice(1)}
+      </div>
+
+      {/* Coordinate Finder Toggle */}
+      <div style={{
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        background: 'rgba(0, 0, 0, 0.7)',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: 4,
+        fontFamily: 'monospace',
+        zIndex: 5,
+      }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+          <input
+            type="checkbox"
+            checked={showCoordinateFinder}
+            onChange={(e) => setShowCoordinateFinder(e.target.checked)}
+            style={{ margin: 0 }}
+          />
+          Coordinate Finder
+        </label>
       </div>
     </div>
   );
