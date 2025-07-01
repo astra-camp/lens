@@ -3,16 +3,23 @@
   "version": "0.1.0",
   "private": false,
   "description": "A modern, plugin-based WebGL rendering engine built with TypeScript and React.",
-  "keywords": ["react", "webgl", "3d", "lens"],
+  "keywords": [
+    "react",
+    "webgl",
+    "3d",
+    "lens"
+  ],
   "homepage": "https://github.com/astra-camp/lens#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/astra-camp/lens.git"
+    "url": "git+https://github.com/astra-camp/lens.git"
   },
   "bugs": {
     "url": "https://github.com/astra-camp/lens/issues"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/index.umd.js",
@@ -74,12 +81,20 @@
     "release": "semantic-release"
   },
   "size-limit": [
-    { "path": "dist/index.esm.js", "limit": "40 KB" },
-    { "path": "dist/index.umd.js", "limit": "60 KB" }
+    {
+      "path": "dist/index.esm.js",
+      "limit": "40 KB"
+    },
+    {
+      "path": "dist/index.umd.js",
+      "limit": "60 KB"
+    }
   ],
   "eslintConfig": {
     "extends": [
       "plugin:storybook/recommended"
     ]
-  }
+  },
+  "author": "smkhalsa",
+  "license": "ISC"
 }
