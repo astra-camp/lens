@@ -29,7 +29,7 @@ export class Lens {
   }: LensOptions) {
     this.regl = Regl({ canvas: canvas, ...reglOptions });
 
-    const baseState: LensState = {
+    this.state = {
       canvas,
       camera: initialCameraState,
       regl: this.regl,
@@ -37,19 +37,14 @@ export class Lens {
       clearOptions: clearOptions,
     };
 
-    this.state = baseState;
-
     this.applyPlugins(plugins);
-    this.start();
+    this.startRenderLoop();
   }
 
   private applyPlugins(plugins: Plugin[]) {
-    // Clear existing callbacks
     this.setupCallbacks = [];
     this.cleanupCallbacks = [];
     this.frameCallbacks = [];
-
-    // Clear draw commands but preserve other state
     this.state.drawCommands = [];
 
     const registerCallbacks = {
@@ -58,10 +53,9 @@ export class Lens {
       onFrame: (callback: (frame: FrameContext) => void) => this.frameCallbacks.push(callback),
     };
 
-    let getState = this.getState.bind(this);
-    let setState = this.setState.bind(this);
+    const getState = this.getState.bind(this);
+    const setState = this.setState.bind(this);
 
-    // Process plugins sequentially
     for (const plugin of plugins) {
       const update = plugin(getState, setState, registerCallbacks);
       this.state = { ...this.state, ...update };
@@ -69,30 +63,31 @@ export class Lens {
   }
 
   updatePlugins(plugins: Plugin[]) {
-    // Stop current frame loop
-    this.stop();
-    
-    // Update plugins
+    this.stopRenderLoop();
     this.applyPlugins(plugins);
-    
-    // Restart frame loop
-    this.start();
+    this.startRenderLoop();
   }
 
-  private start() {
+  private startRenderLoop() {
     this.setupCallbacks.forEach(fn => fn());
     let last = 0;
+    
     this.frameHandle = this.regl.frame(({ time, tick }) => {
       const dt = last ? time - last : 0;
       last = time;
+      
       this.frameCallbacks.forEach(fn => fn({ dt, elapsed: time, tick }));
+      
       this.regl.clear(this.state.clearOptions);
       this.state.drawCommands.forEach((d) => d());
     });
   }
 
-  private stop() {
-    this.frameHandle?.cancel();
+  private stopRenderLoop() {
+    if (this.frameHandle) {
+      this.frameHandle.cancel();
+      this.frameHandle = null;
+    }
     this.cleanupCallbacks.forEach(fn => fn());
   }
 
@@ -105,7 +100,7 @@ export class Lens {
   }
 
   destroy() {
-    this.stop();
+    this.stopRenderLoop();
     this.regl.destroy();
   }
 }

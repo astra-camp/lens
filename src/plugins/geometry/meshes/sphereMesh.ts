@@ -3,8 +3,8 @@ import type { ViewSpaceCoord } from '../../../core/types/Coordinates';
 
 // generate sphere mesh
 export function createSphereMesh(
-  latBands: number = 40,
-  longBands: number = 60
+  latBands: number = 16,
+  longBands: number = 24
 ): MeshDesc {
   const positions: number[] = [];
   const uvs: number[] = [];

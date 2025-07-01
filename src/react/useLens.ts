@@ -47,7 +47,6 @@ export function useLens(opts: UseLensOptions) {
     
     // Create new lens if canvas is available and lens doesn't exist
     if (canvas && !lensRef.current) {
-      // Create lens with empty plugins initially, then update them
       const lens = new Lens({ canvas, ...opts });
       lensRef.current = lens;
     }
@@ -58,11 +57,7 @@ export function useLens(opts: UseLensOptions) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set up resize observer
-    resizeObserverRef.current = new ResizeObserver(() => {
-      updateCanvasSize();
-    });
-
+    resizeObserverRef.current = new ResizeObserver(updateCanvasSize);
     resizeObserverRef.current.observe(canvas);
 
     return () => {
