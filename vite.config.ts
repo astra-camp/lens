@@ -1,35 +1,49 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
+import pkg from './package.json';
 
 export default defineConfig({
-  // support importing .jpg/.jpeg/.png/.svg as assets (with ?url)
-  assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg'],
-  plugins: [
-    react(),
-    dts({
-      // write all .d.ts files into dist/
-      outDir: 'dist',
-      // generate a single dist/index.d.ts that re-exports everything
-      insertTypesEntry: true,
-    }),
-  ],
   build: {
+    target: 'esnext',
+    outDir: 'dist',
+    emptyOutDir: true,
     lib: {
       entry: 'src/index.ts',
-      name: 'Lens',
-      fileName: (format) => `index.${format}.js`,
+      name: 'Lens',               // global variable for UMD
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => {
+        if (format === 'es') return 'index.esm.js';
+        if (format === 'cjs') return 'index.cjs.js';
+        if (format === 'umd') return 'index.umd.js';
+        return `index.${format}.js`;
+      }
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      // mark peerDependencies as externals
+      external: [...Object.keys(pkg.peerDependencies)],
       output: {
         globals: {
           react: 'React',
-          'react-dom': 'ReactDOM',
-        },
-      },
+          'react-dom': 'ReactDOM'
+        }
+      }
     },
     sourcemap: true,
-    minify: true,
+    minify: 'esbuild'
   },
+  plugins: [
+    react(),
+    dts({
+      outDir: 'dist',
+      insertTypesEntry: true,
+      // respectExternal: true
+    })
+  ],
+  resolve: {
+    // if you have path aliases in tsconfig, mirror them here:
+    alias: {
+      '@': new URL('./src', import.meta.url).pathname
+    }
+  }
 });

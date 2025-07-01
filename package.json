@@ -2,28 +2,33 @@
   "name": "@astra-camp/lens",
   "version": "0.1.0",
   "private": false,
+  "description": "A modern, plugin-based WebGL rendering engine built with TypeScript and React.",
+  "keywords": ["react", "webgl", "3d", "lens"],
+  "homepage": "https://github.com/astra-camp/lens#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/astra-camp/lens.git"
+  },
+  "bugs": {
+    "url": "https://github.com/astra-camp/lens/issues"
+  },
+  "files": ["dist"],
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
+  "browser": "dist/index.umd.js",
   "types": "dist/index.d.ts",
-  "scripts": {
-    "prepack": "npm run build",
-    "build": "vite build",
-    "dev": "vite",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "lint": "eslint . --ext .ts,.tsx",
-    "test": "vitest",
-    "size": "size-limit",
-    "release": "semantic-release"
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
+      "default": "./dist/index.umd.js"
+    },
+    "./package.json": "./package.json"
   },
-  "keywords": [],
-  "author": "smkhalsa",
-  "license": "MIT",
-  "description": "",
   "sideEffects": false,
   "peerDependencies": {
-    "react": ">=17.0.0 <20.0.0",
-    "react-dom": ">=17.0.0 <20.0.0"
+    "react": ">=17 <21",
+    "react-dom": ">=17 <21"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3",
@@ -56,15 +61,20 @@
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^3.1.4"
   },
+  "scripts": {
+    "prepack": "npm run build",
+    "build": "vite build",
+    "dev": "vite",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest",
+    "size": "size-limit",
+    "release": "semantic-release"
+  },
   "size-limit": [
-    {
-      "path": "dist/lens.es.js",
-      "limit": "40 KB"
-    },
-    {
-      "path": "dist/lens.umd.js",
-      "limit": "60 KB"
-    }
+    { "path": "dist/index.esm.js", "limit": "40 KB" },
+    { "path": "dist/index.umd.js", "limit": "60 KB" }
   ],
   "eslintConfig": {
     "extends": [
