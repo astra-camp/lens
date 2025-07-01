@@ -37,7 +37,15 @@ export function equirectangularPano({
     const mesh = createSphereMesh(latBands, longBands);
     const { regl, drawCommands } = getState();
 
-    const texture = regl.texture({ data: image as any });
+    // Create texture with high-quality settings for panorama viewing
+    const texture = regl.texture({
+      data: image as any,
+      mag: 'linear',
+      min: 'linear mipmap linear',
+      wrapS: 'clamp',
+      wrapT: 'clamp',
+      flipY: false, // ImageBitmap doesn't need Y-flip
+    });
 
     const command = regl({
       vert: latLongShader.vert,

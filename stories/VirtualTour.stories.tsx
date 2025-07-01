@@ -8,6 +8,7 @@ import {
   orbitControls,
   type HotSpot,
 } from '../src';
+import { useImageLoader } from '../src/utils/useImageLoader';
 
 // Sample panorama images
 import livingUrl from './images/Living_000.png?url';
@@ -17,7 +18,7 @@ import bathroomUrl from './images/Bathroom_000.png?url';
 
 const scenes = {
   living: {
-    image: livingUrl,
+    imageUrl: livingUrl,
     hotspots: [
       {
         coord: [-0.9943646192550659, -0.05175129696726799, 0.09252454340457916],
@@ -34,7 +35,7 @@ const scenes = {
     ] as HotSpot[],
   },
   bedroom: {
-    image: bedroomUrl,
+    imageUrl: bedroomUrl,
     hotspots: [
       {
         coord: [-0.10512484610080719, -0.5808870792388916, 0.8071672320365906],
@@ -47,7 +48,7 @@ const scenes = {
     ] as HotSpot[],
   },
   hall: {
-    image: hallUrl,
+    imageUrl: hallUrl,
     hotspots: [
       {
         coord: [-0.9209504127502441, -0.3753415644168854, -0.1047329381108284],
@@ -64,7 +65,7 @@ const scenes = {
     ] as HotSpot[],
   },
   bathroom: {
-    image: bathroomUrl,
+    imageUrl: bathroomUrl,
     hotspots: [
       {
         coord: [0.04071690887212753, -0.2330167591571808, -0.9716199636459351],
@@ -77,23 +78,64 @@ const scenes = {
 const VirtualTour = () => {
   const [currentScene, setCurrentScene] = useState<keyof typeof scenes>('living');
 
-  const plugins = useMemo(() => [
-    equirectangularPano({ image: scenes[currentScene].image }),
-    orbitControls(),
-    drawHotSpots({
-      hotspots: scenes[currentScene].hotspots,
-      color: [1, 1, 1, 0.8],
-      size: 30,
-    }),
-    hotSpotClick(
-      scenes[currentScene].hotspots,
-      (hotspot) => {
-        setCurrentScene(hotspot.linkTo as keyof typeof scenes);
-      }
-    ),
-  ], [currentScene]);
+  // Load all images
+  const imageUrls = Object.values(scenes).map(scene => scene.imageUrl);
+  const { data: images, loading, error } = useImageLoader(imageUrls);
+
+  const plugins = useMemo(() => {
+    if (!images || images.length === 0) return [];
+    
+    // Create a map of scene names to loaded images
+    const sceneImages = Object.keys(scenes).reduce((acc, sceneName, index) => {
+      acc[sceneName as keyof typeof scenes] = images[index];
+      return acc;
+    }, {} as Record<keyof typeof scenes, ImageBitmap>);
+
+    return [
+      equirectangularPano({ image: sceneImages[currentScene] }),
+      orbitControls(),
+      drawHotSpots({
+        hotspots: scenes[currentScene].hotspots,
+        color: [1, 1, 1, 0.8],
+        size: 30,
+      }),
+      hotSpotClick(
+        scenes[currentScene].hotspots,
+        (hotspot) => {
+          setCurrentScene(hotspot.linkTo as keyof typeof scenes);
+        }
+      ),
+    ];
+  }, [currentScene, images]);
 
   const { canvasRef } = useLens({ plugins });
+
+  if (loading) {
+    return <div style={{ 
+      width: '100%', 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      fontSize: '18px'
+    }}>
+      Loading virtual tour...
+    </div>;
+  }
+
+  if (error) {
+    return <div style={{ 
+      width: '100%', 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      fontSize: '18px',
+      color: 'red'
+    }}>
+      Error loading virtual tour: {error.message}
+    </div>;
+  }
 
   return (
     <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
