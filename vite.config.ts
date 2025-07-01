@@ -18,7 +18,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       name: 'Lens',
-      fileName: (format) => `lens.${format}.js`,
+      fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
       external: ['react', 'react-dom'],
