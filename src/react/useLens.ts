@@ -13,7 +13,7 @@ export function useLens(opts: UseLensOptions) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = opts.reglOptions?.pixelRatio ?? window.devicePixelRatio;
+    const dpr = opts.reglOptions?.pixelRatio ?? window?.devicePixelRatio;
     const rect = canvas.getBoundingClientRect();
     const width = Math.floor(rect.width * dpr);
     const height = Math.floor(rect.height * dpr);
@@ -33,7 +33,7 @@ export function useLens(opts: UseLensOptions) {
         }));
       }
     }
-  }, [opts.reglOptions?.pixelRatio, window.devicePixelRatio]);
+  }, [opts.reglOptions?.pixelRatio, window?.devicePixelRatio]);
 
   // Callback ref that gets called when canvas is set
   const setCanvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
