@@ -5,7 +5,15 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
   // support importing .jpg/.jpeg/.png/.svg as assets (with ?url)
   assetsInclude: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.svg'],
-  plugins: [react(), dts()],
+  plugins: [
+    react(),
+    dts({
+      // write all .d.ts files into dist/
+      outDir: 'dist',
+      // generate a single dist/index.d.ts that re-exports everything
+      insertTypesEntry: true,
+    }),
+  ],
   build: {
     lib: {
       entry: 'src/index.ts',
