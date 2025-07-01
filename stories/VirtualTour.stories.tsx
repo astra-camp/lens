@@ -77,36 +77,36 @@ const scenes = {
 
 const VirtualTour = () => {
   const [currentScene, setCurrentScene] = useState<keyof typeof scenes>('living');
+  
+  // Lazy load only the current scene's image
+  const { data: images, loading, error } = useImageLoader([scenes[currentScene].imageUrl]);
+  const currentImage = images?.[0];
 
-  // Load all images
-  const imageUrls = Object.values(scenes).map(scene => scene.imageUrl);
-  const { data: images, loading, error } = useImageLoader(imageUrls);
-
+  // Create plugins that depend on the current scene and image
   const plugins = useMemo(() => {
-    if (!images || images.length === 0) return [];
-    
-    // Create a map of scene names to loaded images
-    const sceneImages = Object.keys(scenes).reduce((acc, sceneName, index) => {
-      acc[sceneName as keyof typeof scenes] = images[index];
-      return acc;
-    }, {} as Record<keyof typeof scenes, ImageBitmap>);
+    // If no image is loaded yet, return minimal plugins
+    if (!currentImage) {
+      return [];
+    }
 
+    const currentSceneData = scenes[currentScene];
+    
     return [
-      equirectangularPano({ image: sceneImages[currentScene] }),
+      equirectangularPano({ image: currentImage }),
       orbitControls(),
       drawHotSpots({
-        hotspots: scenes[currentScene].hotspots,
+        hotspots: currentSceneData.hotspots,
         color: [1, 1, 1, 0.8],
         size: 30,
       }),
       hotSpotClick(
-        scenes[currentScene].hotspots,
+        currentSceneData.hotspots,
         (hotspot) => {
           setCurrentScene(hotspot.linkTo as keyof typeof scenes);
         }
       ),
     ];
-  }, [currentScene, images]);
+  }, [currentScene, currentImage]);
 
   const { canvasRef } = useLens({ plugins });
 
@@ -119,7 +119,7 @@ const VirtualTour = () => {
       justifyContent: 'center',
       fontSize: '18px'
     }}>
-      Loading virtual tour...
+      Loading {currentScene}...
     </div>;
   }
 
@@ -133,7 +133,7 @@ const VirtualTour = () => {
       fontSize: '18px',
       color: 'red'
     }}>
-      Error loading virtual tour: {error.message}
+      Error loading {currentScene}: {error.message}
     </div>;
   }
 

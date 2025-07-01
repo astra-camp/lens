@@ -39,6 +39,19 @@ export class Lens {
 
     this.state = baseState;
 
+    this.applyPlugins(plugins);
+    this.start();
+  }
+
+  private applyPlugins(plugins: Plugin[]) {
+    // Clear existing callbacks
+    this.setupCallbacks = [];
+    this.cleanupCallbacks = [];
+    this.frameCallbacks = [];
+
+    // Clear draw commands but preserve other state
+    this.state.drawCommands = [];
+
     const registerCallbacks = {
       onSetup: (callback: () => void) => this.setupCallbacks.push(callback),
       onCleanup: (callback: () => void) => this.cleanupCallbacks.push(callback),
@@ -53,7 +66,16 @@ export class Lens {
       const update = plugin(getState, setState, registerCallbacks);
       this.state = { ...this.state, ...update };
     }
+  }
 
+  updatePlugins(plugins: Plugin[]) {
+    // Stop current frame loop
+    this.stop();
+    
+    // Update plugins
+    this.applyPlugins(plugins);
+    
+    // Restart frame loop
     this.start();
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useLayoutEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Lens, LensOptions } from '../core/lens';
 
 export type UseLensOptions = Omit<LensOptions, 'canvas'>;
@@ -35,6 +35,24 @@ export function useLens(opts: UseLensOptions) {
     }
   };
 
+  // Callback ref that gets called when canvas is set
+  const setCanvasRef = useCallback((canvas: HTMLCanvasElement | null) => {
+    // Clean up old lens if canvas is being removed
+    if (!canvas && lensRef.current) {
+      lensRef.current.destroy();
+      lensRef.current = null;
+    }
+
+    canvasRef.current = canvas;
+    
+    // Create new lens if canvas is available and lens doesn't exist
+    if (canvas && !lensRef.current) {
+      updateCanvasSize();
+      const lens = new Lens({ canvas, ...opts });
+      lensRef.current = lens;
+    }
+  }, [opts.reglOptions]);
+
   // Set up resize observer to handle canvas size changes
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -55,22 +73,21 @@ export function useLens(opts: UseLensOptions) {
     };
   }, [opts.reglOptions?.pixelRatio]);
 
-  // Create/destroy lens instance
+  // Update plugins when they change (without recreating lens)
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!lensRef.current) return;
+    lensRef.current.updatePlugins(opts.plugins);
+  }, [opts.plugins]);
 
-    // Ensure canvas is properly sized before creating lens
-    updateCanvasSize();
-
-    const lens = new Lens({ canvas, ...opts });
-    lensRef.current = lens;
-
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      lens.destroy();
-      lensRef.current = null;
+      if (lensRef.current) {
+        lensRef.current.destroy();
+        lensRef.current = null;
+      }
     };
-  }, [opts.plugins, opts.reglOptions]);
+  }, []);
 
-  return { canvasRef, setState: lensRef.current?.setState };
+  return { canvasRef: setCanvasRef, setState: lensRef.current?.setState };
 }
