@@ -5,17 +5,19 @@ export function pointerPan<T extends HTMLElement>(
 ): Plugin {
   return (getState, _, { onSetup, onCleanup }) => {
     let lastPoint: { x: number; y: number } | null = null;
+    let isDragging = false;
 
     function onPointerDown(e: PointerEvent) {
       e.preventDefault();
       const { canvas } = getState();
       canvas.setPointerCapture(e.pointerId);
       lastPoint = { x: e.clientX, y: e.clientY };
+      isDragging = true;
     }
 
     function onPointerMove(e: PointerEvent) {
       e.preventDefault();
-      if (!lastPoint) return;
+      if (!lastPoint || !isDragging) return;
       const dx = e.clientX - lastPoint.x;
       const dy = e.clientY - lastPoint.y;
       lastPoint = { x: e.clientX, y: e.clientY };
@@ -26,6 +28,13 @@ export function pointerPan<T extends HTMLElement>(
       const { canvas } = getState();
       canvas.releasePointerCapture(e.pointerId);
       lastPoint = null;
+      isDragging = false;
+    }
+
+    function onLostPointerCapture() {
+      // Handle when pointer capture is lost (e.g., pointer released outside canvas)
+      lastPoint = null;
+      isDragging = false;
     }
 
     onSetup(() => {
@@ -37,6 +46,7 @@ export function pointerPan<T extends HTMLElement>(
       canvas.addEventListener('pointermove', onPointerMove, { passive: false });
       canvas.addEventListener('pointerup', onPointerUpOrCancel);
       canvas.addEventListener('pointercancel', onPointerUpOrCancel);
+      canvas.addEventListener('lostpointercapture', onLostPointerCapture);
     });
 
     onCleanup(() => {
@@ -45,6 +55,7 @@ export function pointerPan<T extends HTMLElement>(
       canvas.removeEventListener('pointermove', onPointerMove);
       canvas.removeEventListener('pointerup', onPointerUpOrCancel);
       canvas.removeEventListener('pointercancel', onPointerUpOrCancel);
+      canvas.removeEventListener('lostpointercapture', onLostPointerCapture);
     });
 
     return {};
