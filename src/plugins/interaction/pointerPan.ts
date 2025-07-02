@@ -9,6 +9,8 @@ interface PointerInfo {
 export interface PointerPanOptions {
   pointerCount: number;
   exactCount?: boolean; // If true, requires exactly pointerCount. If false, requires >= pointerCount
+  onPanStart?: () => void; // Called when panning starts (required pointers detected)
+  onPanFinish?: () => void; // Called when panning finishes (no more required pointers)
 }
 
 export function pointerPan<T extends HTMLElement>(
@@ -19,6 +21,16 @@ export function pointerPan<T extends HTMLElement>(
     const activePointers = new Map<number, PointerInfo>();
     let lastCenter: { x: number; y: number } | null = null;
     let isDragging = false;
+
+    function startDragging() {
+      isDragging = true;
+      options.onPanStart?.();
+    }
+
+    function stopDragging() {
+      isDragging = false;
+      options.onPanFinish?.();
+    }
 
     function hasRequiredPointers(): boolean {
       return options.exactCount 
@@ -53,17 +65,11 @@ export function pointerPan<T extends HTMLElement>(
         y: e.clientY
       });
       
-      // Set touch action to prevent pinch-to-zoom as soon as first pointer comes down
-      // This allows scrolling but prevents pinch gestures
-      canvas.style.touchAction = 'pan-x pan-y';
-      
       // Only start dragging if we have the required number of pointers
       if (hasRequiredPointers()) {
-        // Disable all touch actions when we have the required pointers for panning
-        canvas.style.touchAction = 'none';
         canvas.setPointerCapture(e.pointerId);
         lastCenter = getCenterPoint();
-        isDragging = true;
+        startDragging();
       }
     }
 
@@ -100,12 +106,7 @@ export function pointerPan<T extends HTMLElement>(
       if (isDragging && !hasRequiredPointers()) {
         canvas.releasePointerCapture(e.pointerId);
         lastCenter = null;
-        isDragging = false;
-      }
-      
-      // Only re-enable touch gestures when all pointers are gone
-      if (activePointers.size === 0) {
-        canvas.style.touchAction = 'auto';
+        stopDragging();
       }
     }
 
@@ -113,17 +114,16 @@ export function pointerPan<T extends HTMLElement>(
       // Handle when pointer capture is lost (e.g., pointer released outside canvas)
       // Clear all pointers and reset state
       const { canvas } = getState();
+      const wasDragging = isDragging;
       activePointers.clear();
       lastCenter = null;
-      isDragging = false;
-      // Re-enable touch gestures when all pointers are lost
-      canvas.style.touchAction = 'auto';
+      if (wasDragging) {
+        stopDragging();
+      }
     }
 
     onSetup(() => {
       const { canvas } = getState();
-      // Only disable text selection, touch action will be managed dynamically
-      canvas.style.userSelect = 'none';
       canvas.addEventListener('pointerdown', onPointerDown);
       canvas.addEventListener('pointermove', onPointerMove, { passive: false });
       canvas.addEventListener('pointerup', onPointerUpOrCancel);
@@ -138,9 +138,6 @@ export function pointerPan<T extends HTMLElement>(
       canvas.removeEventListener('pointerup', onPointerUpOrCancel);
       canvas.removeEventListener('pointercancel', onPointerUpOrCancel);
       canvas.removeEventListener('lostpointercapture', onLostPointerCapture);
-      
-      // Re-enable touch gestures when plugin is cleaned up
-      canvas.style.touchAction = 'auto';
     });
 
     return {};
