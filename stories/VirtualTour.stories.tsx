@@ -8,6 +8,7 @@ import {
   hotSpotClick,
   orbitControls,
   coordinateFinder,
+  performanceMonitor,
   type HotSpot,
 } from '../src';
 
@@ -79,6 +80,7 @@ const scenes = {
 const VirtualTour = () => {
   const [currentScene, setCurrentScene] = useState<keyof typeof scenes>('living');
   const [showCoordinateFinder, setShowCoordinateFinder] = useState(false);
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
   
   // Lazy load only the current scene's image
   const { data: images, loading, error } = useImageLoader([scenes[currentScene].imageUrl]);
@@ -121,8 +123,15 @@ const VirtualTour = () => {
       );
     }
 
+    // Add performance monitor if enabled
+    if (showPerformanceMonitor) {
+      basePlugins.push(
+        performanceMonitor({ position: 'bottom-right' })
+      );
+    }
+
     return basePlugins;
-  }, [currentScene, currentImage, showCoordinateFinder]);
+  }, [currentScene, currentImage, showCoordinateFinder, showPerformanceMonitor]);
 
   const { canvasRef } = useLens({ plugins });
 
@@ -188,7 +197,7 @@ const VirtualTour = () => {
         Current Room: {currentScene.charAt(0).toUpperCase() + currentScene.slice(1)}
       </div>
 
-      {/* Coordinate Finder Toggle */}
+      {/* Controls */}
       <div style={{
         position: 'absolute',
         top: 20,
@@ -199,6 +208,9 @@ const VirtualTour = () => {
         borderRadius: 4,
         fontFamily: 'monospace',
         zIndex: 5,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
       }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
           <input
@@ -208,6 +220,15 @@ const VirtualTour = () => {
             style={{ margin: 0 }}
           />
           Coordinate Finder
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
+          <input
+            type="checkbox"
+            checked={showPerformanceMonitor}
+            onChange={(e) => setShowPerformanceMonitor(e.target.checked)}
+            style={{ margin: 0 }}
+          />
+          Performance Monitor
         </label>
       </div>
     </div>

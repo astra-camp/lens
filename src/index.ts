@@ -21,6 +21,10 @@ export { pointerPan } from './plugins/interaction/pointerPan';
 export { orbitControls } from './plugins/interaction/orbitControls';
 export { coordinateFinder } from './plugins/interaction/coordinateFinder';
 
+// Performance plugins
+export { performanceMonitor } from './plugins/performance/performanceMonitor';
+export type { PerformanceMonitorOptions, PerformanceMetrics } from './plugins/performance/performanceMonitor';
+
 // Tour plugins
 export { drawHotSpots } from './plugins/tour/drawHotSpots';
 export type { HotSpotDrawOptions } from './plugins/tour/drawHotSpots';
