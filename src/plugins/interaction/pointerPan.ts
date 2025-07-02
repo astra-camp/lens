@@ -71,6 +71,8 @@ export function pointerPan(
         canvas.setPointerCapture(e.pointerId);
         lastCenter = getCenterPoint();
         startDragging();
+        // Prevent default to stop browser pinch-to-zoom
+        e.preventDefault();
       }
     }
 
@@ -86,6 +88,9 @@ export function pointerPan(
       
       // Only pan if we have the required number of pointers and are dragging
       if (!lastCenter || !isDragging || !hasRequiredPointers()) return;
+      
+      // Prevent default to stop browser pinch-to-zoom during panning
+      e.preventDefault();
       
       const currentCenter = getCenterPoint();
       if (!currentCenter) return;
