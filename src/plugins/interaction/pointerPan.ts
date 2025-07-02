@@ -53,9 +53,13 @@ export function pointerPan<T extends HTMLElement>(
         y: e.clientY
       });
       
+      // Set touch action to prevent pinch-to-zoom as soon as first pointer comes down
+      // This allows scrolling but prevents pinch gestures
+      canvas.style.touchAction = 'pan-x pan-y';
+      
       // Only start dragging if we have the required number of pointers
       if (hasRequiredPointers()) {
-        // Disable touch gestures only when orbit controls are active
+        // Disable all touch actions when we have the required pointers for panning
         canvas.style.touchAction = 'none';
         canvas.setPointerCapture(e.pointerId);
         lastCenter = getCenterPoint();
@@ -97,7 +101,10 @@ export function pointerPan<T extends HTMLElement>(
         canvas.releasePointerCapture(e.pointerId);
         lastCenter = null;
         isDragging = false;
-        // Re-enable touch gestures when orbit controls are no longer active
+      }
+      
+      // Only re-enable touch gestures when all pointers are gone
+      if (activePointers.size === 0) {
         canvas.style.touchAction = 'auto';
       }
     }
@@ -109,7 +116,7 @@ export function pointerPan<T extends HTMLElement>(
       activePointers.clear();
       lastCenter = null;
       isDragging = false;
-      // Re-enable touch gestures when orbit controls are no longer active
+      // Re-enable touch gestures when all pointers are lost
       canvas.style.touchAction = 'auto';
     }
 
@@ -131,6 +138,7 @@ export function pointerPan<T extends HTMLElement>(
       canvas.removeEventListener('pointerup', onPointerUpOrCancel);
       canvas.removeEventListener('pointercancel', onPointerUpOrCancel);
       canvas.removeEventListener('lostpointercapture', onLostPointerCapture);
+      
       // Re-enable touch gestures when plugin is cleaned up
       canvas.style.touchAction = 'auto';
     });
