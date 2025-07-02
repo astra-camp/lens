@@ -1,7 +1,11 @@
-import { pointerPan } from './pointerPan';
+import { pointerPan, PointerPanOptions } from './pointerPan';
 import { Plugin } from '../../core/types/Plugin';
 
-export function orbitControls(): Plugin {
+export interface OrbitControlsOptions {
+  pointerOptions?: PointerPanOptions;
+}
+
+export function orbitControls(options: OrbitControlsOptions = {}): Plugin {
   return (getState, setState, registerCallbacks) => {
     return pointerPan((dx, dy) => {
       const { canvas, camera } = getState();
@@ -29,6 +33,6 @@ export function orbitControls(): Plugin {
           )
         }
       }));
-    })(getState, setState, registerCallbacks);
+    }, options.pointerOptions)(getState, setState, registerCallbacks);
   };
 }
