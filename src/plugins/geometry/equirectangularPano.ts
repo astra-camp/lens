@@ -40,7 +40,7 @@ export function equirectangularPano({
     const texture = regl.texture({
       data: image as any,
       mag: 'linear',
-      min: 'linear',
+      min: 'linear mipmap linear',
       wrapS: 'clamp',
       wrapT: 'clamp',
       flipY: false,

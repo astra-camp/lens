@@ -23,7 +23,7 @@ export class Lens {
   constructor({
     canvas,
     plugins,
-    initialCameraState = { yaw: 0, pitch: 0, vFOV: Math.PI / 3, aspect: 1 },
+    initialCameraState = { yaw: 0, pitch: 0, vFOV: Math.PI / 2, aspect: 1 },
     reglOptions,
     clearOptions = { color: [0, 0, 0, 0], depth: 1 },
   }: LensOptions) {
