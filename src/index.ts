@@ -17,7 +17,7 @@ export type { EquirectangularPanoProps } from './plugins/geometry/equirectangula
 
 // Interaction plugins
 export { clickRay } from './plugins/interaction/clickRay';
-export { pointerPan } from './plugins/interaction/pointerPan';
+export { pointerPan, type PointerPanOptions } from './plugins/interaction/pointerPan';
 export { orbitControls } from './plugins/interaction/orbitControls';
 export { coordinateFinder } from './plugins/interaction/coordinateFinder';
 
