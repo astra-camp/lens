@@ -19,6 +19,7 @@ export class Lens {
   private setupCallbacks: Array<() => void> = [];
   private cleanupCallbacks: Array<() => void> = [];
   private frameCallbacks: Array<(frame: FrameContext) => void> = [];
+  private isDirty: boolean = true; // Track if state has changed and needs rendering
 
   constructor({
     canvas,
@@ -46,6 +47,7 @@ export class Lens {
     this.cleanupCallbacks = [];
     this.frameCallbacks = [];
     this.state.drawCommands = [];
+    this.isDirty = true; // Mark as dirty when plugins change
 
     const registerCallbacks = {
       onSetup: (callback: () => void) => this.setupCallbacks.push(callback),
@@ -76,10 +78,15 @@ export class Lens {
       const dt = last ? time - last : 0;
       last = time;
       
+      // Always run frame callbacks for timing and UI updates
       this.frameCallbacks.forEach(fn => fn({ dt, elapsed: time, tick }));
       
-      this.regl.clear(this.state.clearOptions);
-      this.state.drawCommands.forEach((d) => d());
+      // Only render if state has changed
+      if (this.isDirty) {
+        this.regl.clear(this.state.clearOptions);
+        this.state.drawCommands.forEach((d) => d());
+        this.isDirty = false;
+      }
     });
   }
 
@@ -97,6 +104,7 @@ export class Lens {
 
   setState(update: (state: LensState) => Partial<LensState>) {
     this.state = { ...this.state, ...update(this.state) };
+    this.isDirty = true; // Mark as dirty when state changes
   }
 
   destroy() {
