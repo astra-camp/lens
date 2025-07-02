@@ -44,7 +44,6 @@ export function pointerPan<T extends HTMLElement>(
     }
 
     function onPointerDown(e: PointerEvent) {
-      e.preventDefault();
       const { canvas } = getState();
       
       // Add the new pointer to our tracking
@@ -63,8 +62,6 @@ export function pointerPan<T extends HTMLElement>(
     }
 
     function onPointerMove(e: PointerEvent) {
-      e.preventDefault();
-      
       // Update the pointer position
       if (activePointers.has(e.pointerId)) {
         activePointers.set(e.pointerId, {

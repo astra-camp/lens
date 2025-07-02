@@ -1,6 +1,6 @@
 {
   "name": "@astra-camp/lens",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": false,
   "description": "A modern, plugin-based WebGL rendering engine built with TypeScript and React.",
   "keywords": [
