@@ -1,4 +1,5 @@
 import type { Plugin } from '../../core/types/Plugin';
+import type { LensState } from '../../core/types/LensState';
 
 interface PointerInfo {
   id: number;
@@ -9,12 +10,12 @@ interface PointerInfo {
 export interface PointerPanOptions {
   pointerCount: number;
   exactCount?: boolean; // If true, requires exactly pointerCount. If false, requires >= pointerCount
-  onPanStart?: () => void; // Called when panning starts (required pointers detected)
-  onPanFinish?: () => void; // Called when panning finishes (no more required pointers)
+  onPanStart?: (state: LensState) => void; // Called when panning starts (required pointers detected)
+  onPanFinish?: (state: LensState) => void; // Called when panning finishes (no more required pointers)
 }
 
-export function pointerPan<T extends HTMLElement>(
-  onPan: (dx: number, dy: number) => void,
+export function pointerPan(
+  onPan: (dx: number, dy: number, state: LensState) => void,
   options: PointerPanOptions = { pointerCount: 1, exactCount: true }
 ): Plugin {
   return (getState, _, { onSetup, onCleanup }) => {
@@ -24,12 +25,12 @@ export function pointerPan<T extends HTMLElement>(
 
     function startDragging() {
       isDragging = true;
-      options.onPanStart?.();
+      options.onPanStart?.(getState());
     }
 
     function stopDragging() {
       isDragging = false;
-      options.onPanFinish?.();
+      options.onPanFinish?.(getState());
     }
 
     function hasRequiredPointers(): boolean {
@@ -93,7 +94,7 @@ export function pointerPan<T extends HTMLElement>(
       const dy = currentCenter.y - lastCenter.y;
       lastCenter = currentCenter;
       
-      onPan(dx, dy);
+      onPan(dx, dy, getState());
     }
 
     function onPointerUpOrCancel(e: PointerEvent) {
