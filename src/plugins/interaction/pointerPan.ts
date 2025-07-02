@@ -55,6 +55,8 @@ export function pointerPan<T extends HTMLElement>(
       
       // Only start dragging if we have the required number of pointers
       if (hasRequiredPointers()) {
+        // Disable touch gestures only when orbit controls are active
+        canvas.style.touchAction = 'none';
         canvas.setPointerCapture(e.pointerId);
         lastCenter = getCenterPoint();
         isDragging = true;
@@ -95,21 +97,25 @@ export function pointerPan<T extends HTMLElement>(
         canvas.releasePointerCapture(e.pointerId);
         lastCenter = null;
         isDragging = false;
+        // Re-enable touch gestures when orbit controls are no longer active
+        canvas.style.touchAction = 'auto';
       }
     }
 
     function onLostPointerCapture() {
       // Handle when pointer capture is lost (e.g., pointer released outside canvas)
       // Clear all pointers and reset state
+      const { canvas } = getState();
       activePointers.clear();
       lastCenter = null;
       isDragging = false;
+      // Re-enable touch gestures when orbit controls are no longer active
+      canvas.style.touchAction = 'auto';
     }
 
     onSetup(() => {
       const { canvas } = getState();
-      // disable native touch gestures and text selection
-      canvas.style.touchAction = 'none';
+      // Only disable text selection, touch action will be managed dynamically
       canvas.style.userSelect = 'none';
       canvas.addEventListener('pointerdown', onPointerDown);
       canvas.addEventListener('pointermove', onPointerMove, { passive: false });
@@ -125,6 +131,8 @@ export function pointerPan<T extends HTMLElement>(
       canvas.removeEventListener('pointerup', onPointerUpOrCancel);
       canvas.removeEventListener('pointercancel', onPointerUpOrCancel);
       canvas.removeEventListener('lostpointercapture', onLostPointerCapture);
+      // Re-enable touch gestures when plugin is cleaned up
+      canvas.style.touchAction = 'auto';
     });
 
     return {};
